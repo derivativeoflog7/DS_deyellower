@@ -12,7 +12,7 @@ Please take the necessary precautions, or avoid using this application yourself,
 
 # Disclaimer
 There's still a lot of unknown things regarding yellow NDS(i) screens, the causes, and the processes to potentially revert it.  
-This was made as a test program after the above observations I made on my console, but it's not guaranteed to work for everyone (or at all), especially for more serious cases.  
+This was made as a test program after the above observations I made on my console, but it's not guaranteed to work for everyone (or completely), especially for more serious cases.  
 Leaving the console on for a prolonged period of time, especially at maximum brightness, can and has been known to kill screens, and will potentially reduce the lifespan of them.  
 Leaving the console on and plugged to a charger for a prolonged period of time will also definitely shorten the battery's lifetime and it's capacity to hold a charge.  
 Understand and accepts these risks before trying to deyellow screens, with this application or in general.  
