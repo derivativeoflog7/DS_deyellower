@@ -23,6 +23,7 @@ Launch the application (Unlaunch doesn't seem to work) and it will immediately s
 Hold the dpad up to temporarly show blue screens, right for yellow, down for white, and left for black.  
 Hold X, and press the dpad up to decrease the speed, down to speed it back up, and left to reset it to the default.   
 Hold Y, and press the dpad up to turn off the backlight, right for level 1, down for level 2, left for level 3, A for level 4, and B for level 5 ([not all backlight levels are available on all models](https://blocksds.skylyrac.net/libnds/system_8h.html#a9bd93bee5409c05451447034b250959b), some may act the same) (this is mostly for testing, it is currently not certainly known how and if the backlight impacts the process).  
+Press start to exit.  
 This application disables sleep mode when closing the lid.
 
 # TODO
