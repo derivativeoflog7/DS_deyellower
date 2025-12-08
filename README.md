@@ -3,7 +3,7 @@ Test application, **potentially** helping with the yellowed screens issue on NDS
 
 # Reasoning
 After noticing my DSi's screens started to yellow from the corners and sides, I tried using leaving it on for 2.5 days on a white screen.  
-While that did help a bit, I was starting to get worried about leaving the console on at max brightness, so I stopped; it was also apparently reyellowing a bit after leaving it off for the night.  
+While that did help a bit, I was starting to get worried about leaving the console on at max brightness for so long, so I stopped; it was also apparently reyellowing a bit after leaving it off for the night.  
 But then the next day, after using the console for an afternoon to play games, I noticed that the yellowing was noticeably reduced.  
 Because of this, I started thinking that changing colors would be more effective compared to a static white screen.  
 
@@ -11,7 +11,7 @@ Because of this, I started thinking that changing colors would be more effective
 Please take the necessary precautions, or avoid using this application yourself, if you're sensitive to rapidly flashing/cycling lights.  
 
 # Disclaimer
-There's still a lot of unknown things regarding yellow NDS(i) screens, the causes, and the processes to potentially revert it.  
+There's still a lot of unknown things regarding yellowed NDS(i) screens, the causes, and the processes to potentially revert it.  
 This was made as a test program after the above observations I made on my console, but it's not guaranteed to work for everyone (or completely), especially for more serious cases.  
 Leaving the console on for a prolonged period of time, especially at maximum brightness, can and has been known to kill screens, and will potentially reduce the lifespan of them.  
 Leaving the console on and plugged to a charger for a prolonged period of time will also definitely shorten the battery's lifetime and it's capacity to hold a charge.  
