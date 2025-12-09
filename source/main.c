@@ -30,10 +30,6 @@ int main(int argc, char **argv) {
     consoleInit(&bottom_screen_console, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
 
 
-    print_top_screen(&top_screen_console, screens, screen_on_length, screen_off_length, repetition_count, mode);
-
-
-
     while (1)
     {
         swiWaitForVBlank();
@@ -77,7 +73,7 @@ int main(int argc, char **argv) {
                 }
                 else if (keys_down & KEY_UP && menu_position > 0)
                     menu_position--;
-                else if (keys_down & KEY_DOWN && menu_position < ARRAY_LENGTH(SETTING_ENTRIES) - 1)
+                else if (keys_down & KEY_DOWN && menu_position < setting_entries_count() - 1)
                     menu_position++;
                 break;
         }

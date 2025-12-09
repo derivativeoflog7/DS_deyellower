@@ -1,18 +1,43 @@
 #include "menu.h"
+#include "common.h"
+
+typedef struct {
+    const Status target;
+    const char *text;
+} SettingsEntry;
+
+static const SettingsEntry SETTING_ENTRIES[] = {
+    {.target = SELECT_SCREENS_MENU, .text = "Select screens"},
+    {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen on length"},
+    {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen off length"},
+    {.target = REPETITION_COUNT_MENU, .text = "Repetition count"},
+    {.target = MODE_MENU, .text = "Mode"},
+    {.target = BRIGHTNESS_MENU, .text = "Brightness"}
+};
 
 void print_top_screen(
-    PrintConsole *top_screen_console,
-    Screens screens,
-    unsigned int screen_on_length,
-    unsigned int screen_off_length,
-    unsigned int repetition_count,
-    Mode mode
+    PrintConsole* const top_screen_console,
+    const Screens screens,
+    const unsigned int screen_on_length,
+    const unsigned int screen_off_length,
+    const unsigned int repetition_count,
+    const Mode mode
 ) {
     consoleSelect(top_screen_console);
     consoleClear();
     printf("DS_deyellower v2.0\n");
     printf("by derivativeoflog7\n");
     printf("\n");
+    /*printf("Detected console type:\n");
+    printf(
+        "%s\n",
+        console_type == DSI ?
+        "DSi" :
+        console_type == DS_WITH_BACKLIGHT_CONTROL ?
+        "DS (Lite) with backlight control" :
+        "DS without backlight control"
+    );
+    printf("\n");*/
     printf("Current settings: \n");
     printf("Top screen: %s\n", screens == BOTTOM ? "OFF" : "ON");
     printf("Bottom screen: %s\n", screens == TOP ? "OFF" : "ON");
@@ -32,8 +57,8 @@ void print_top_screen(
 }
 
 void print_settings_menu (
-    PrintConsole *bottom_screen_console,
-    int pos
+    PrintConsole* const bottom_screen_console,
+    const int pos
 ) {
     consoleSelect(bottom_screen_console);
     for (int i = 0; i < ARRAY_LENGTH(SETTING_ENTRIES); i++) {
@@ -49,4 +74,8 @@ void print_settings_menu (
     consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
     consoleSetCursor(bottom_screen_console, 0, (*bottom_screen_console).consoleHeight - 1);
     printf("Press B to go back");
+}
+
+int setting_entries_count() {
+    return ARRAY_LENGTH(SETTING_ENTRIES);
 }

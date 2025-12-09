@@ -25,6 +25,12 @@ typedef enum {
     CYCLING
 } Mode;
 
+typedef enum {
+    DS_WITHOUT_BACKLIGHT_CONTROL,
+    DS_WITH_BACKLIGHT_CONTROL,
+    DSI
+} ConsoleType;
+
 #define DEFAULT_SCREEN_ON_LENGTH 240
 #define DEFAULT_SCREEN_OFF_LENGTH 10
 #define DEFAULT_REPETITION_COUNT 12
