@@ -30,4 +30,6 @@ typedef enum {
 #define DEFAULT_REPETITION_COUNT 12
 #define DEFAULT_MODE WHITE_SCREEN
 
+#define ARRAY_LENGTH(x) (sizeof(x) / sizeof(x[0]))
+
 #endif

@@ -10,7 +10,14 @@ typedef struct {
     const char *text;
 } SettingsEntry;
 
-extern const SettingsEntry SETTING_ENTRIESS[];
+static const SettingsEntry SETTING_ENTRIES[] = {
+    {.target = SELECT_SCREENS_MENU, .text = "Select screens"},
+    {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen on length"},
+    {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen off length"},
+    {.target = REPETITION_COUNT_MENU, .text = "Repetition count"},
+    {.target = MODE_MENU, .text = "Mode"},
+    {.target = BRIGHTNESS_MENU, .text = "Brightness"}
+};
 
 void print_top_screen (
     PrintConsole *top_screen_console,

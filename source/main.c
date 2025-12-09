@@ -4,10 +4,10 @@
 #include "menu.h"
 
 
-
 int main(int argc, char **argv) {
     Status current_status = MAIN_MENU;
     u16 keys_held, keys_down; // for buttons
+    int menu_position = 0;
 
     // Default settings
     unsigned int screen_on_length = DEFAULT_SCREEN_ON_LENGTH;
@@ -58,15 +58,28 @@ int main(int argc, char **argv) {
                 printf("Press A to begin\n");
                 printf("Press X for settings\n");
                 printf("Press B to power down\n");
+                printf("Press START to power off\n\t(at any time)\n");
                 if (keys_down & KEY_B)
                     systemShutDown();
-                else if (keys_down & KEY_X)
+                else if (keys_down & KEY_X) {
+                    menu_position = 0;
                     current_status = SETTINGS_MENU;
+
+                }
                 else if (keys_down & KEY_A)
                     current_status = RUNNING_SCREEN_ON;
                 break;
             case SETTINGS_MENU:
-                print_settings_menu(&bottom_screen_console, 2); //TODO this is just a test
+                print_settings_menu(&bottom_screen_console, menu_position);
+                if (keys_down & KEY_B) {
+                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
+                    current_status = MAIN_MENU;
+                }
+                else if (keys_down & KEY_UP && menu_position > 0)
+                    menu_position--;
+                else if (keys_down & KEY_DOWN && menu_position < ARRAY_LENGTH(SETTING_ENTRIES) - 1)
+                    menu_position++;
+                break;
         }
 
 

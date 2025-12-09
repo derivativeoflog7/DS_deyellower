@@ -1,14 +1,5 @@
 #include "menu.h"
 
-const SettingsEntry SETTING_ENTRIESS[] = {
-    {.target = SELECT_SCREENS_MENU, .text = "Select screens"},
-    {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen on length"},
-    {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen off length"},
-    {.target = REPETITION_COUNT_MENU, .text = "Repetition count"},
-    {.target = MODE_MENU, .text = "Mode"},
-    {.target = BRIGHTNESS_MENU, .text = "Brightness"}
-};
-
 void print_top_screen(
     PrintConsole *top_screen_console,
     Screens screens,
@@ -45,7 +36,7 @@ void print_settings_menu (
     int pos
 ) {
     consoleSelect(bottom_screen_console);
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < ARRAY_LENGTH(SETTING_ENTRIES); i++) {
         if (i == pos) {
             consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
             printf("-> ");
@@ -53,6 +44,9 @@ void print_settings_menu (
             consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_GRAY);
             printf("   ");
         }
-        printf("%s\n", SETTING_ENTRIESS[i].text);
+        printf("%s\n", SETTING_ENTRIES[i].text);
     }
+    consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
+    consoleSetCursor(bottom_screen_console, 0, (*bottom_screen_console).consoleHeight - 1);
+    printf("Press B to go back");
 }
