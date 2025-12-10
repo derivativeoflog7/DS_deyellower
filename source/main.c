@@ -86,6 +86,8 @@ int main(int argc, char **argv) {
                         int_to_buffer(screen_on_length, number_input_buffer);
                     else if (current_status == SCREEN_OFF_LENGTH_MENU)
                         int_to_buffer(screen_off_length, number_input_buffer);
+                    else if (current_status == REPETITION_COUNT_MENU)
+                        int_to_buffer(repetition_count, number_input_buffer);
                 }
                 else if (keys_down & KEY_UP && menu_position > 0)
                     menu_position--;
@@ -111,9 +113,14 @@ int main(int argc, char **argv) {
                 if (keys_down & KEY_A)
                     screen_off_length = buffer_to_int(number_input_buffer);
                 break;
+            case REPETITION_COUNT_MENU:
+                printf("Repetition count:\n\n");
+                if (keys_down & KEY_A)
+                    repetition_count = buffer_to_int(number_input_buffer);
+                break;
         }
 
-        if (current_status == SCREEN_ON_LENGTH_MENU || current_status == SCREEN_OFF_LENGTH_MENU) {
+        if (current_status == SCREEN_ON_LENGTH_MENU || current_status == SCREEN_OFF_LENGTH_MENU || current_status == REPETITION_COUNT_MENU) {
             print_number_input(&bottom_screen_console, menu_position, number_input_buffer);
             if (keys_down & KEY_LEFT && menu_position > 0)
                 menu_position--;
