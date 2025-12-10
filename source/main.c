@@ -12,11 +12,12 @@ int main(int argc, char **argv) {
 
     const int SETTING_ENTRIES_COUNT = setting_entries_count();
     const int SCREEN_ENTRIES_COUNT = screen_entries_count();
+    const int MODE_ENTRIES_COUNT = mode_entries_count();
 
     // Default settings
-    unsigned int screen_on_length = DEFAULT_SCREEN_ON_LENGTH;
-    unsigned int screen_off_length = DEFAULT_SCREEN_OFF_LENGTH;
-    unsigned int repetition_count = DEFAULT_REPETITION_COUNT;
+    int screen_on_length = DEFAULT_SCREEN_ON_LENGTH;
+    int screen_off_length = DEFAULT_SCREEN_OFF_LENGTH;
+    int repetition_count = DEFAULT_REPETITION_COUNT;
     Mode mode = DEFAULT_MODE;
     Screens screens = BOTH;
 
@@ -34,8 +35,7 @@ int main(int argc, char **argv) {
     consoleInit(&bottom_screen_console, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
 
 
-    while (1)
-    {
+    while (1) {
         swiWaitForVBlank();
 
         // TODO maybe there's a better way to do this?
@@ -58,8 +58,6 @@ int main(int argc, char **argv) {
         consoleSelect(&bottom_screen_console);
         consoleClear();
 
-
-
         switch(current_status) {
             case MAIN_MENU:
                 printf("Press A to begin\n");
@@ -75,6 +73,7 @@ int main(int argc, char **argv) {
                 else if (keys_down & KEY_A)
                     current_status = RUNNING_SCREEN_ON;
                 break;
+            // ===Setting menus with a list===
             case SETTINGS_MENU:
                 print_settings_menu(&bottom_screen_console, menu_position);
                 if (keys_down & KEY_B)
@@ -103,6 +102,16 @@ int main(int argc, char **argv) {
                 else if (keys_down & KEY_DOWN && menu_position < SCREEN_ENTRIES_COUNT - 1)
                     menu_position++;
                 break;
+            case MODE_MENU:
+                print_modes_menu(&bottom_screen_console, menu_position);
+                if (keys_down & KEY_A)
+                    mode = get_mode_target(menu_position);
+                else if (keys_down & KEY_UP && menu_position > 0)
+                    menu_position--;
+                else if (keys_down & KEY_DOWN && menu_position < MODE_ENTRIES_COUNT - 1)
+                    menu_position++;
+                break;
+            // ===Setting menus with numerical input===
             case SCREEN_ON_LENGTH_MENU:
                 printf("Screen on length (minutes):\n\n");
                 if (keys_down & KEY_A)

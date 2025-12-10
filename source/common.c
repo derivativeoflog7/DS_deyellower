@@ -1,7 +1,9 @@
 #include "common.h"
 #include <nds.h>
+#include <nds/system.h>
 
 void int_to_buffer(int val, int* const target) {
+    assert(val > 0);
     for (int i = NUMBER_INPUT_LENGTH - 1; i >= 0; i--) {
         target[i] = val % 10;
         val /= 10;
@@ -19,3 +21,13 @@ int buffer_to_int(int* const buf) {
     }
     return ret;
 }
+
+/*ConsoleType detect_console_type() {
+    if (isDSiMode())
+        return DSI;
+    u8 backlight_level =
+    if (backlight_level & 0xF0)
+        return DS_WITH_BACKLIGHT_CONTROL;
+    return DS_WITHOUT_BACKLIGHT_CONTROL;
+
+}*/

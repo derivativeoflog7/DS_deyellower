@@ -11,6 +11,11 @@ typedef struct {
     const char *text;
 } ScreenEntry;
 
+typedef struct {
+    const Mode target;
+    const char *text;
+} ModeEntry;
+
 static const SettingsEntry SETTING_ENTRIES[] = {
     {.target = SELECT_SCREENS_MENU, .text = "Select screens"},
     {.target = SCREEN_ON_LENGTH_MENU, .text = "Screen on length"},
@@ -26,12 +31,17 @@ static const ScreenEntry SCREEN_ENTRIES[] = {
     {.target = BOTTOM, .text = "Bottom screen"}
 };
 
+static const ModeEntry MODE_ENTRIES[] = {
+    {.target = WHITE_SCREEN, .text = "White screen"},
+    {.target = CYCLING, .text = "Cycling colors"}
+};
+
 void print_top_screen(
     PrintConsole* const top_screen_console,
     const Screens screens,
-    const unsigned int screen_on_length,
-    const unsigned int screen_off_length,
-    const unsigned int repetition_count,
+    const int screen_on_length,
+    const int screen_off_length,
+    const int repetition_count,
     const Mode mode
 ) {
     consoleSelect(top_screen_console);
@@ -85,7 +95,6 @@ void print_settings_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
 ) {
-    consoleSelect(bottom_screen_console);
     for (int i = 0; i < ARRAY_LENGTH(SETTING_ENTRIES); i++) {
         if (i == pos) {
             consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
@@ -103,7 +112,6 @@ void print_screens_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
 ) {
-    consoleSelect(bottom_screen_console);
     for (int i = 0; i < ARRAY_LENGTH(SCREEN_ENTRIES); i++) {
         if (i == pos) {
             consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
@@ -117,12 +125,28 @@ void print_screens_menu (
     print_submenu_bottom_text(bottom_screen_console, 1);
 }
 
+void print_modes_menu (
+    PrintConsole* const bottom_screen_console,
+    const int pos
+) {
+    for (int i = 0; i < ARRAY_LENGTH(MODE_ENTRIES); i++) {
+        if (i == pos) {
+            consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
+            printf("-> ");
+        } else {
+            consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_GRAY);
+            printf("   ");
+        }
+        printf("%s\n", MODE_ENTRIES[i].text);
+    }
+    print_submenu_bottom_text(bottom_screen_console, 1);
+}
+
 void print_number_input (
     PrintConsole* const bottom_screen_console,
     const int pos,
     const int* const number_input_buffer
 ) {
-    consoleSelect(bottom_screen_console);
     for (int i = 0; i < NUMBER_INPUT_LENGTH; i++) {
         printf("%d", number_input_buffer[i]);
         if (pos == i) {
@@ -145,9 +169,15 @@ Status get_settings_target(int pos) {
 }
 
 Screens get_screen_target(int pos) {
-    assert (pos >= 0);
+    assert(pos >= 0);
     assert(pos < ARRAY_LENGTH(SCREEN_ENTRIES));
     return SCREEN_ENTRIES[pos].target;
+}
+
+Mode get_mode_target(int pos) {
+    assert(pos >= 0);
+    assert(pos < ARRAY_LENGTH(MODE_ENTRIES));
+    return MODE_ENTRIES[pos].target;
 }
 
 int setting_entries_count() {
@@ -156,4 +186,8 @@ int setting_entries_count() {
 
 int screen_entries_count() {
     return ARRAY_LENGTH(SCREEN_ENTRIES);
+}
+
+int mode_entries_count() {
+    return ARRAY_LENGTH(MODE_ENTRIES);
 }

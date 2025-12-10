@@ -40,5 +40,6 @@ typedef enum {
 
 void int_to_buffer(int val, int* const target);
 int buffer_to_int(int* const buf);
+ConsoleType detect_console_type();
 
 #endif

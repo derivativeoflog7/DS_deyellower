@@ -8,9 +8,9 @@
 void print_top_screen (
     PrintConsole* const top_screen_console,
     const Screens screens,
-    const unsigned int screen_on_length,
-    const unsigned int screen_off_length,
-    const unsigned int repetition_count,
+    int screen_on_length,
+    int screen_off_length,
+    int repetition_count,
     const Mode mode
 );
 
@@ -24,6 +24,11 @@ void print_screens_menu (
     const int pos
 );
 
+void print_modes_menu (
+    PrintConsole* const bottom_screen_console,
+    const int pos
+);
+
 void print_number_input (
     PrintConsole* const bottom_screen_console,
     const int pos,
@@ -32,7 +37,9 @@ void print_number_input (
 
 int setting_entries_count();
 int screen_entries_count();
+int mode_entries_count();
 Status get_settings_target(int pos);
 Screens get_screen_target(int pos);
+Mode get_mode_target(int pos);
 
 #endif
