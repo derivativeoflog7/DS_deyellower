@@ -82,16 +82,10 @@ int main(int argc, char **argv) {
                 else if (keys_down & KEY_A) {
                     current_status = get_settings_target(menu_position);
                     menu_position = 0;
-                    #pragma GCC diagnostic push
-                    #pragma GCC diagnostic ignored "-Wswitch"
-                    switch (current_status) {
-                        case SCREEN_ON_LENGTH_MENU:
-                            int_to_buffer(screen_on_length, number_input_buffer);
-                            break;
-                        case SCREEN_OFF_LENGTH_MENU:
-                            int_to_buffer(screen_off_length, number_input_buffer);
-                            break;
-                    }
+                    if (current_status == SCREEN_ON_LENGTH_MENU)
+                        int_to_buffer(screen_on_length, number_input_buffer);
+                    else if (current_status == SCREEN_OFF_LENGTH_MENU)
+                        int_to_buffer(screen_off_length, number_input_buffer);
                 }
                 else if (keys_down & KEY_UP && menu_position > 0)
                     menu_position--;
