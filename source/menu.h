@@ -19,6 +19,20 @@ void print_settings_menu (
     const int pos
 );
 
+void print_screens_menu (
+    PrintConsole* const bottom_screen_console,
+    const int pos
+);
+
+void print_number_input (
+    PrintConsole* const bottom_screen_console,
+    const int pos,
+    const int* const number_input_buffer
+);
+
 int setting_entries_count();
+int screen_entries_count();
+Status get_settings_target(int pos);
+Screens get_screen_target(int pos);
 
 #endif

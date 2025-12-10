@@ -7,7 +7,11 @@
 int main(int argc, char **argv) {
     Status current_status = MAIN_MENU;
     u16 keys_held, keys_down; // for buttons
-    int menu_position = 0;
+    int menu_position = 0, flag;
+    int number_input_buffer[NUMBER_INPUT_LENGTH];
+
+    const int SETTING_ENTRIES_COUNT = setting_entries_count();
+    const int SCREEN_ENTRIES_COUNT = screen_entries_count();
 
     // Default settings
     unsigned int screen_on_length = DEFAULT_SCREEN_ON_LENGTH;
@@ -34,6 +38,11 @@ int main(int argc, char **argv) {
     {
         swiWaitForVBlank();
 
+        // TODO maybe there's a better way to do this?
+        flag = 0;
+        if (current_status >= SELECT_SCREENS_MENU && current_status <= BRIGHTNESS_MENU)
+            flag = 1;
+
         scanKeys();
         keys_down = keysDown();
         keys_held = keysHeld();
@@ -46,9 +55,11 @@ int main(int argc, char **argv) {
             print_top_screen(&top_screen_console, screens, screen_on_length, screen_off_length, repetition_count, mode);
         }
 
-
         consoleSelect(&bottom_screen_console);
         consoleClear();
+
+
+
         switch(current_status) {
             case MAIN_MENU:
                 printf("Press A to begin\n");
@@ -60,28 +71,73 @@ int main(int argc, char **argv) {
                 else if (keys_down & KEY_X) {
                     menu_position = 0;
                     current_status = SETTINGS_MENU;
-
                 }
                 else if (keys_down & KEY_A)
                     current_status = RUNNING_SCREEN_ON;
                 break;
             case SETTINGS_MENU:
                 print_settings_menu(&bottom_screen_console, menu_position);
-                if (keys_down & KEY_B) {
-                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
+                if (keys_down & KEY_B)
                     current_status = MAIN_MENU;
+                else if (keys_down & KEY_A) {
+                    current_status = get_settings_target(menu_position);
+                    menu_position = 0;
+                    #pragma GCC diagnostic push
+                    #pragma GCC diagnostic ignored "-Wswitch"
+                    switch (current_status) {
+                        case SCREEN_ON_LENGTH_MENU:
+                            int_to_buffer(screen_on_length, number_input_buffer);
+                            break;
+                        case SCREEN_OFF_LENGTH_MENU:
+                            int_to_buffer(screen_off_length, number_input_buffer);
+                            break;
+                    }
                 }
                 else if (keys_down & KEY_UP && menu_position > 0)
                     menu_position--;
-                else if (keys_down & KEY_DOWN && menu_position < setting_entries_count() - 1)
+                else if (keys_down & KEY_DOWN && menu_position < SETTING_ENTRIES_COUNT - 1)
                     menu_position++;
+                break;
+            case SELECT_SCREENS_MENU:
+                print_screens_menu(&bottom_screen_console, menu_position);
+                if (keys_down & KEY_A)
+                    screens = get_screen_target(menu_position);
+                else if (keys_down & KEY_UP && menu_position > 0)
+                    menu_position--;
+                else if (keys_down & KEY_DOWN && menu_position < SCREEN_ENTRIES_COUNT - 1)
+                    menu_position++;
+                break;
+            case SCREEN_ON_LENGTH_MENU:
+                printf("Screen on length (minutes):\n\n");
+                if (keys_down & KEY_A)
+                    screen_on_length = buffer_to_int(number_input_buffer);
+                break;
+            case SCREEN_OFF_LENGTH_MENU:
+                printf("Screen off length (minutes):\n\n");
+                if (keys_down & KEY_A)
+                    screen_off_length = buffer_to_int(number_input_buffer);
                 break;
         }
 
+        if (current_status == SCREEN_ON_LENGTH_MENU || current_status == SCREEN_OFF_LENGTH_MENU) {
+            print_number_input(&bottom_screen_console, menu_position, number_input_buffer);
+            if (keys_down & KEY_LEFT && menu_position > 0)
+                menu_position--;
+            else if (keys_down & KEY_RIGHT && menu_position < NUMBER_INPUT_LENGTH - 1)
+                menu_position++;
+            else if (keys_down & KEY_UP && number_input_buffer[menu_position] < 9)
+                number_input_buffer[menu_position]++;
+            else if (keys_down & KEY_DOWN && number_input_buffer[menu_position] > 0)
+                number_input_buffer[menu_position]--;
+        }
+
+
+        if (flag && keys_down & (KEY_B | KEY_A)) {
+            menu_position = 0;
+            current_status = SETTINGS_MENU;
+        }
 
     }
-
-    return 0;
 }
 
 

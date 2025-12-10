@@ -35,7 +35,10 @@ typedef enum {
 #define DEFAULT_SCREEN_OFF_LENGTH 10
 #define DEFAULT_REPETITION_COUNT 12
 #define DEFAULT_MODE WHITE_SCREEN
-
+#define NUMBER_INPUT_LENGTH 5 // pretty sure 99999 minutes is enough for the max value for screen on/off times
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof(x[0]))
+
+void int_to_buffer(int val, int* const target);
+int buffer_to_int(int* const buf);
 
 #endif
