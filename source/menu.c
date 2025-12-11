@@ -43,7 +43,7 @@ void print_backlight_level (
 ) {
     printf("%d ", backlight_level);
     if (backlight_level == 0)
-        printf("(screen off)");
+        printf("(off)");
     else if (
         (console_type == DS_WITHOUT_BACKLIGHT_CONTROL && backlight_level == 1) ||
         (console_type == DS_WITH_BACKLIGHT_CONTROL && backlight_level == 4) ||
@@ -176,14 +176,20 @@ void print_backlight_level_menu (
     printf("Backlight level:\n");
     print_backlight_level(level, console_type);
     printf("\n\n");
+
+    consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_GRAY);
     printf("This will not take effect\n");
     printf("until the process is started\n\n");
-    consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_YELLOW);
+    printf("Level 0 means that the screen\n");
+    printf("will still produce an image,\n");
+    printf("but the backlight LEDs will be\n");
+    printf("completely off\n\n");
+    consoleSetColor(bottom_screen_console, CONSOLE_YELLOW);
     printf("Even if the console type has\n");
     printf("been misdetected, setting the\n");
     printf("level to max will work as\n");
     printf("expected on all models\n\n");
-    consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_RED);
+    consoleSetColor(bottom_screen_console, CONSOLE_RED);
     printf("This is for experimenting only,\n");
     printf("the current consensus is that\n");
     printf("max brightness works best for\n");

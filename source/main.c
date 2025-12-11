@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
                         powerOff(PM_BACKLIGHT_BOTTOM);
                     else if (screens == BOTTOM)
                         powerOff(PM_BACKLIGHT_TOP);
+
                     disableSleep();
                     systemSetBacklightLevel(backlight_level);
                     current_status = RUNNING_SCREEN_ON;
