@@ -19,9 +19,11 @@ This application features a white screen mode, and an experimental mode with cyc
 > But then the next day, after using the console for an afternoon to play games, I noticed that the yellowing was noticeably reduced.  
 >Because of this, I started thinking that changing colors would be more effective compared to a static white screen.  
 
-This application also allows to set any backlight level (including turning off the backlights completely) instead of only the maximum.
+This application also allows to set any backlight level (including turning off the backlights completely) instead of only the maximum.  
+As part of this, it will try to detect if it's running on a DSi or a DS; avoid running the application in DS mode on a DSi or it will misidentify which console it's running on (but even if that happens, the maximum and off backlight levels will work as expected).
 
 Both of these features are experimental, as the effectiveness of the cycling colors and/or lower backlight levels in different circumstances have to be tested and validated.
+
 
 # Usage
 For nativating the menus, follow the on-screen instructions.  
