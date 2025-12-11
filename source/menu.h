@@ -11,49 +11,48 @@ void print_backlight_level (
 );
 
 void print_top_screen (
-    PrintConsole* const top_screen_console,
-    const Screens screens,
+    PrintConsole* top_screen_console,
     int screen_on_length,
     int screen_off_length,
     int repetition_count,
     int backlight_level,
-    const Mode mode,
-    const ConsoleType console_type
+    Screens screens,
+    Mode mode,
+    ConsoleType console_type
 );
 
 void print_settings_menu (
-    PrintConsole* const bottom_screen_console,
-    const int pos
+    PrintConsole* bottom_screen_console,
+    int pos
 );
 
 void print_screens_menu (
-    PrintConsole* const bottom_screen_console,
-    const int pos
+    PrintConsole* bottom_screen_console,
+    int pos
 );
 
 void print_modes_menu (
-    PrintConsole* const bottom_screen_console,
-    const int pos
+    PrintConsole* bottom_screen_console,
+    int pos
 );
 
 void print_backlight_level_menu (
-    PrintConsole* const bottom_screen_console,
-    const int level,
-    const ConsoleType console_type
+    PrintConsole* bottom_screen_console,
+    int level,
+    ConsoleType console_type
 );
 
 void print_number_input (
-    PrintConsole* const bottom_screen_console,
-    const int pos,
-    const int* const number_input_buffer
+    PrintConsole* bottom_screen_console,
+    int pos,
+    const int* number_input_buffer
 );
-
 
 int setting_entries_count();
 int screen_entries_count();
 int mode_entries_count();
-Status get_settings_target(const int pos);
-Screens get_screen_target(const int pos);
-Mode get_mode_target(const int pos);
+Status get_settings_target(int pos);
+Screens get_screen_target(int pos);
+Mode get_mode_target(int pos);
 
 #endif

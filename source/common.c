@@ -35,3 +35,16 @@ ConsoleType detect_console_type() {
         return DS_WITH_BACKLIGHT_CONTROL;
     return DS_WITHOUT_BACKLIGHT_CONTROL;
 }
+
+void setBacklightAdjusted(int backlight_level, ConsoleType console_type) {
+    /*
+     * https://blocksds.skylyrac.net/libnds/system_8h.html#a9bd93bee5409c05451447034b250959b
+     * On DSi, just set the level as is
+     * On DS (lite) with backlight control, add 1 to the backlight level, as they are shifted by one (except 0)
+     * On DS without backlight control, libnds internally maps all non-zero values to backlight on
+     */
+    systemSetBacklightLevel(
+        console_type == DS_WITH_BACKLIGHT_CONTROL && backlight_level > 0 ?
+        backlight_level + 1 : backlight_level
+    );
+}

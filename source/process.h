@@ -20,39 +20,46 @@ typedef enum {
 } CyclingPhase;
 
 void init_screen_on_phase(
-    const Mode mode,
-    const int minutes,
+    Mode mode,
+    int minutes,
     int* seconds,
-    void* timer_handler
+    void* timer_handler,
+    u16* backdrop_color,
+    CyclingPhase* current_cycling_phase
 );
 
 void init_screen_off_phase (
-    const int minutes,
+    int minutes,
     int* seconds,
     void* timer_handler
 );
 
-int handleBacklight(
+void handleBacklight(
     int *current_backlight_top,
     int *current_backlight_bottom,
     int *last_backlight_top,
     int *last_backlight_bottom,
-    const Screens screens,
-    const int backlight_level,
-    const int MAX_BACKLIGHT_LEVEL,
-    const int CONSOLE_TYPE,
-    const u16 keys_held,
-    const int is_phase_screen_on
+    int backlight_level,
+    int MAX_BACKLIGHT_LEVEL,
+    int CONSOLE_TYPE,
+    int is_phase_screen_on,
+    u16 keys_held,
+    Screens screens
 );
 
 void print_progress_message(
-    PrintConsole *console,
+    PrintConsole *top_screen_console,
+    PrintConsole *bottom_screen_console,
     int remaining_seconds,
     int remaining_repetitions,
     int is_screen_on_phase
 );
 
-void setBacklight(int backlight_level, ConsoleType console_type);
+void print_warning_message(
+    PrintConsole *top_screen_console,
+    PrintConsole *bottom_screen_console
+);
+
 void setBackdropBoth(u16 col);
 
 #endif

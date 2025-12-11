@@ -22,7 +22,7 @@ typedef enum {
 
 typedef enum {
     WHITE_SCREEN,
-    CYCLING
+    CYCLING_COLORS
 } Mode;
 
 typedef enum {
@@ -38,8 +38,9 @@ typedef enum {
 #define NUMBER_INPUT_LENGTH 5 // pretty sure 99999 is a good max value for everything in this program
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof(x[0]))
 
-void int_to_buffer(int val, int* const target);
-int buffer_to_int(int* const buf);
+void int_to_buffer(int val, int* target);
+int buffer_to_int(int* buf);
 ConsoleType detect_console_type();
+void setBacklightAdjusted(int backlight_level, ConsoleType console_type);
 
 #endif

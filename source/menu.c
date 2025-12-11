@@ -33,7 +33,7 @@ static const ScreenEntry SCREEN_ENTRIES[] = {
 
 static const ModeEntry MODE_ENTRIES[] = {
     {.target = WHITE_SCREEN, .text = "White screen"},
-    {.target = CYCLING, .text = "Cycling colors"}
+    {.target = CYCLING_COLORS, .text = "Cycling colors"}
 };
 
 // Print backlight level and text next to it for max/off
@@ -47,17 +47,18 @@ void print_backlight_level (
     else if (
         (console_type == DS_WITHOUT_BACKLIGHT_CONTROL && backlight_level == 1) ||
         (console_type == DS_WITH_BACKLIGHT_CONTROL && backlight_level == 4) ||
-        (console_type == DSI && backlight_level == 5))
+        (console_type == DSI && backlight_level == 5)
+    )
         printf("(max)");
 }
 
 void print_top_screen (
     PrintConsole* const top_screen_console,
-    const Screens screens,
     const int screen_on_length,
     const int screen_off_length,
     const int repetition_count,
     const int backlight_level,
+    const Screens screens,
     const Mode mode,
     const ConsoleType console_type
 ) {
@@ -67,15 +68,13 @@ void print_top_screen (
     printf("by derivativeoflog7\n");
     printf("\n");
     printf("Detected console type:\n");
-    printf(
-        "%s\n",
-        console_type == DSI ?
-        "DSi\n" :
-        console_type == DS_WITH_BACKLIGHT_CONTROL ?
-        "DS (Lite) with backlight control" : // No \n as it fits a row perfectly
-        "DS without backlight control\n"
-    );
-    printf("Current settings: \n");
+    if (console_type == DSI)
+        printf("DSi\n");
+    else if (console_type == DS_WITH_BACKLIGHT_CONTROL)
+        printf("DS (Lite) with backlight control"); // No newline as it fits a whole row
+    else
+        printf("DS without backlight control\n");
+    printf("\nCurrent settings: \n");
     printf("Top screen: %s\n", screens == BOTTOM ? "NO" : "YES");
     printf("Bottom screen: %s\n", screens == TOP ? "NO" : "YES");
     printf("Screen on length: %umin\n", screen_on_length);
@@ -87,24 +86,26 @@ void print_top_screen (
     printf("\n");
 }
 
+// Print bottom text of submenus
 void print_submenu_bottom_text(
     PrintConsole* const bottom_screen_console,
-    const int print_A
+    const int do_print_A // print "Press A to confirm"
 ) {
-    consoleSetCursor(bottom_screen_console, 0, (*bottom_screen_console).consoleHeight - 1);
+    consoleSetCursor(bottom_screen_console, 0, bottom_screen_console->consoleHeight - 1);
     printf("Press B to go back");
-    if (print_A) {
-        consoleSetCursor(bottom_screen_console, 0, (*bottom_screen_console).consoleHeight - 2);
+    if (do_print_A) {
+        consoleSetCursor(bottom_screen_console, 0, bottom_screen_console->consoleHeight - 2);
         printf("Press A to confirm");
     }
 }
 
+// Prints a line of a list menu, with color and arrow if needed
 void print_list_line (
     PrintConsole* const bottom_screen_console,
-    const int selected,
+    const int is_selected,
     const char* const text
 ) {
-    if (selected)
+    if (is_selected)
         printf("-> ");
     else {
         consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_GRAY);
@@ -116,6 +117,7 @@ void print_list_line (
     consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
 }
 
+// Prints the main settings menu
 void print_settings_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
@@ -123,11 +125,12 @@ void print_settings_menu (
     for (int i = 0; i < ARRAY_LENGTH(SETTING_ENTRIES); i++) {
         print_list_line(bottom_screen_console, i == pos, SETTING_ENTRIES[i].text);
     }
-    consoleSetCursor(bottom_screen_console, 0, (*bottom_screen_console).consoleHeight - 2);
+    consoleSetCursor(bottom_screen_console, 0, bottom_screen_console->consoleHeight - 2);
     printf("Press A to enter");
     print_submenu_bottom_text(bottom_screen_console, 0);
 }
 
+// Prints the screens setting menu
 void print_screens_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
@@ -138,6 +141,7 @@ void print_screens_menu (
     print_submenu_bottom_text(bottom_screen_console, 1);
 }
 
+// Prints the modes setting menu
 void print_modes_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
@@ -148,6 +152,7 @@ void print_modes_menu (
     print_submenu_bottom_text(bottom_screen_console, 1);
 }
 
+// Prints a number input
 void print_number_input (
     PrintConsole* const bottom_screen_console,
     const int pos,
@@ -162,12 +167,13 @@ void print_number_input (
         }
     }
 
-    consoleSetCursor(bottom_screen_console, 0, (*bottom_screen_console).consoleHeight - 4);
+    consoleSetCursor(bottom_screen_console, 0, bottom_screen_console->consoleHeight - 4);
     printf("Use dpad LEFT/RIGHT to move\n");
     printf("Use dpad UP/DOWN to incr/decr");
     print_submenu_bottom_text(bottom_screen_console, 1);
 }
 
+// Prints the backlight level setting menu
 void print_backlight_level_menu (
     PrintConsole* const bottom_screen_console,
     const int level,
@@ -200,18 +206,21 @@ void print_backlight_level_menu (
     print_submenu_bottom_text(bottom_screen_console, 1);
 }
 
+// Get the next status based on the position of the cursor in the main settings menu
 Status get_settings_target(const int pos) {
     assert(pos >= 0);
     assert(pos < ARRAY_LENGTH(SETTING_ENTRIES));
     return SETTING_ENTRIES[pos].target;
 }
 
+// Get the screen option based on the position of the cursor in the screen setting menu
 Screens get_screen_target(const int pos) {
     assert(pos >= 0);
     assert(pos < ARRAY_LENGTH(SCREEN_ENTRIES));
     return SCREEN_ENTRIES[pos].target;
 }
 
+// Get the mode option based on the position of the cursor in the mode setting menu
 Mode get_mode_target(const int pos) {
     assert(pos >= 0);
     assert(pos < ARRAY_LENGTH(MODE_ENTRIES));

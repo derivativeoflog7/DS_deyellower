@@ -4,46 +4,29 @@
 #include "menu.h"
 #include "process.h"
 
-#define NOCASH_BUFFER_SIZE 50
+#define DEBUG_BUFFER_SIZE 50
 
 int remaining_seconds;
-
-void backlight_debug(
-    const int current_backlight_top,
-    const int current_backlight_bottom,
-    const int last_backlight_top,
-    const int last_backlight_bottom,
-    char buf[],
-    const size_t size
-) {
-    snprintf(
-        buf, size, "Last top %d bot %d; curr top %d bot %d",
-        last_backlight_top, last_backlight_bottom, current_backlight_top, current_backlight_bottom
-    );
-    nocashMessage(buf);
-}
-
 void time_handler() {
     remaining_seconds--;
 }
 
 int main(int argc, char **argv) {
-
     // Working variables
-    char nocash_buffer[NOCASH_BUFFER_SIZE];
+    CyclingPhase current_cycling_phase = BLACK_TO_BLUE;
     Status current_status = MAIN_MENU;
-    u16 keys_held, keys_down; // for buttons
-    int submenu_position = 0, settings_menu_position = 0, in_setting_submenu;
+    u16 backdrop_color, keys_held, keys_down;
+    int submenu_position = 0, settings_menu_position = 0, is_in_setting_submenu;
     int number_input_buffer[NUMBER_INPUT_LENGTH];
-    int backlight_level_buffer;
-    int remaining_repetitions = 0;
+    int backlight_level_buffer; // yes, I could reuse the above, but I don't want to deal with that
+    int remaining_repetitions = 0; // init to avoid the compiler complaining about it
     int current_backlight_top, current_backlight_bottom, last_backlight_top, last_backlight_bottom;
 
     // Constants
+    const ConsoleType CONSOLE_TYPE = detect_console_type();
     const int SETTING_ENTRIES_COUNT = setting_entries_count();
     const int SCREEN_ENTRIES_COUNT = screen_entries_count();
     const int MODE_ENTRIES_COUNT = mode_entries_count();
-    const ConsoleType CONSOLE_TYPE = detect_console_type();
     const int MAX_BACKLIGHT_LEVEL = CONSOLE_TYPE == DSI ? 5 :
         CONSOLE_TYPE == DS_WITH_BACKLIGHT_CONTROL ? 4 : 1;
 
@@ -71,24 +54,29 @@ int main(int argc, char **argv) {
     // Main loop
     while (1) {
         swiWaitForVBlank();
-
-        in_setting_submenu = 0;
-        if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
-            in_setting_submenu = 1;
-
         scanKeys();
         keys_down = keysDown();
         keys_held = keysHeld();
 
-        // Don't shutdown if select is held so that you can set backlight level on DSi (mostly for testing)
-        if (!(keys_held & KEY_SELECT) && (keys_down & KEY_START))
-            systemShutDown();
+        is_in_setting_submenu = 0;
+        if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
+            is_in_setting_submenu = 1;
 
         // Print info on top screen if process is not running
         if (current_status < RUNNING_SCREEN_ON) {
-            print_top_screen(&top_screen_console, screens, screen_on_length_minutes, screen_off_length_minutes, repetition_count, backlight_level, mode, CONSOLE_TYPE);
+            print_top_screen(
+                &top_screen_console,
+                screen_on_length_minutes,
+                screen_off_length_minutes,
+                repetition_count,
+                backlight_level,
+                screens,
+                mode,
+                CONSOLE_TYPE
+            );
         }
 
+        // Clear bottom console
         consoleSelect(&bottom_screen_console);
         consoleClear();
 
@@ -98,15 +86,21 @@ int main(int argc, char **argv) {
                 printf("Press A to begin\n");
                 printf("Press X for settings\n");
                 printf("Press START to power off\n\t(at any time)\n");
+                // Enter settings menu
                 if (keys_down & KEY_X) {
                     settings_menu_position = 0;
                     current_status = SETTINGS_MENU;
                 }
                 else if (keys_down & KEY_A) {
                     // Start the process
-                    consoleSelect(&top_screen_console);
-                    consoleClear();
-                    init_screen_on_phase(mode, screen_off_length_minutes, &remaining_seconds, &time_handler);
+                    init_screen_on_phase(
+                        mode,
+                        screen_on_length_minutes,
+                        &remaining_seconds,
+                        &time_handler,
+                        &backdrop_color,
+                        &current_cycling_phase
+                    );
                     disableSleep();
                     remaining_repetitions = repetition_count - 1;
                     current_status = RUNNING_SCREEN_ON;
@@ -118,12 +112,11 @@ int main(int argc, char **argv) {
                 print_settings_menu(&bottom_screen_console, settings_menu_position);
                 if (keys_down & KEY_B)
                     current_status = MAIN_MENU;
+                // Handle entering a settings submenu
                 else if (keys_down & KEY_A) {
-                    // Handle entering a settings submenu
-
                     current_status = get_settings_target(settings_menu_position);
                     submenu_position = 0;
-                    // Copy corresponding value to number input buffer
+                    // Copy corresponding value to the input buffer
                     if (current_status == SCREEN_ON_LENGTH_MENU)
                         int_to_buffer(screen_on_length_minutes, number_input_buffer);
                     else if (current_status == SCREEN_OFF_LENGTH_MENU)
@@ -133,6 +126,7 @@ int main(int argc, char **argv) {
                     else if (current_status == BACKLIGHT_LEVEL_MENU)
                         backlight_level_buffer = backlight_level;
                 }
+                // Handle moving in the menu
                 else if (keys_down & KEY_UP) {
                     if (settings_menu_position > 0)
                         settings_menu_position--;
@@ -168,7 +162,7 @@ int main(int argc, char **argv) {
                 break;
 
             // ===Setting menus with numerical input===
-            // Number input is printed further down below
+            // Number input is printed and handled further down below
             case SCREEN_ON_LENGTH_MENU:
                 printf("Screen on length (minutes):\n\n");
                 if (keys_down & KEY_A)
@@ -203,8 +197,34 @@ int main(int argc, char **argv) {
 
             // ===Running===
             case RUNNING_SCREEN_ON:
-                // TODO
-                setBackdropBoth(WHITE);
+                setBackdropBoth(backdrop_color);
+                // Cycle colors black→blue→yellow→white
+                if (mode == CYCLING_COLORS) {
+                    switch (current_cycling_phase) {
+                        case BLACK_TO_BLUE:
+                            backdrop_color += BLUE_INCREMENT;
+                            if (backdrop_color == BLUE)
+                                current_cycling_phase = BLUE_TO_YELLOW;
+                            break;
+                        case BLUE_TO_YELLOW:
+                            backdrop_color += YELLOW_INCREMENT;
+                            backdrop_color -= BLUE_INCREMENT;
+                            if (backdrop_color == YELLOW)
+                                current_cycling_phase = YELLOW_TO_WHITE;
+                            break;
+                        case YELLOW_TO_WHITE:
+                            backdrop_color += BLUE_INCREMENT;
+                            if (backdrop_color == WHITE)
+                                current_cycling_phase = WHITE_TO_BLACK;
+                            break;
+                        case WHITE_TO_BLACK:
+                            backdrop_color -= WHITE_INCREMENT;
+                            if (backdrop_color == BLACK)
+                                current_cycling_phase = BLACK_TO_BLUE;
+                            break;
+                    }
+                }
+                // Change phase or power off when the time has elapsed
                 if (remaining_seconds <= 0) {
                     if (remaining_repetitions <= 0)
                         systemShutDown();
@@ -213,17 +233,25 @@ int main(int argc, char **argv) {
                 }
                 break;
             case RUNNING_SCREEN_OFF:
+                // Change phase when the time has elapsed, and decrease the number of remaining repetitions
                 if (remaining_seconds <= 0) {
-                    init_screen_on_phase(mode, screen_off_length_minutes, &remaining_seconds, &time_handler);
+                    init_screen_on_phase(
+                        mode,
+                        screen_off_length_minutes,
+                        &remaining_seconds,
+                        &time_handler,
+                        &backdrop_color,
+                        &current_cycling_phase
+                    );
                     remaining_repetitions--;
                     current_status = RUNNING_SCREEN_ON;
                 }
                 break;
         }
 
-        // Print number input and text at the bottom if needed
+        // Print number input and text at the bottom and handle dpad
         if (
-            in_setting_submenu && // Avoids having the numbers printed in the wrong place for a frame
+            is_in_setting_submenu && // Avoids having the numbers printed in the wrong place for a frame
             (current_status == SCREEN_ON_LENGTH_MENU ||
             current_status == SCREEN_OFF_LENGTH_MENU ||
             current_status == REPETITION_COUNT_MENU)
@@ -240,43 +268,31 @@ int main(int argc, char **argv) {
         }
 
         // Handle leaving a settings submenu when pressing A or B
-        if (in_setting_submenu && keys_down & (KEY_B | KEY_A)) {
+        if (is_in_setting_submenu && keys_down & (KEY_B | KEY_A)) {
             submenu_position = 0;
             current_status = SETTINGS_MENU;
         }
 
+        // Handle setting the backlights and screens when the process is running
         if (current_status == RUNNING_SCREEN_ON || current_status == RUNNING_SCREEN_OFF) {
-            // Handle setting the backlights
-            if (
-                handleBacklight(
-                    &current_backlight_top,
-                    &current_backlight_bottom,
-                    &last_backlight_top,
-                    &last_backlight_bottom,
-                    screens,
-                    backlight_level,
-                    MAX_BACKLIGHT_LEVEL,
-                    CONSOLE_TYPE,
-                    keys_held,
-                    current_status == RUNNING_SCREEN_ON
-                )
-            )
-                backlight_debug(
-                    current_backlight_top,
-                    current_backlight_bottom,
-                    last_backlight_top,
-                    last_backlight_bottom,
-                    nocash_buffer,
-                    NOCASH_BUFFER_SIZE
-                );
+            handleBacklight(
+                &current_backlight_top,
+                &current_backlight_bottom,
+                &last_backlight_top,
+                &last_backlight_bottom,
+                backlight_level,
+                MAX_BACKLIGHT_LEVEL,
+                CONSOLE_TYPE,
+                current_status == RUNNING_SCREEN_ON,
+                keys_held,
+                screens
+            );
 
-            // FIXME
+            // Clear consoles
             consoleSelect(&top_screen_console);
             consoleClear();
-            consoleSetColor(&top_screen_console, CONSOLE_LIGHT_MAGENTA);
             consoleSelect(&bottom_screen_console);
             consoleClear();
-            consoleSetColor(&bottom_screen_console, CONSOLE_LIGHT_MAGENTA);
 
             if (keys_held & KEY_UP)
                 setBackdropBoth(BLUE);
@@ -287,15 +303,23 @@ int main(int argc, char **argv) {
             else if (keys_held & KEY_LEFT)
                 setBackdropBoth(BLACK);
             if (keys_held & KEY_X) {
-                consoleSelect(&top_screen_console);
-                print_progress_message(&top_screen_console, remaining_seconds, remaining_repetitions, current_status == RUNNING_SCREEN_ON);
-                consoleSelect(&bottom_screen_console);
-                print_progress_message(&top_screen_console, remaining_seconds, remaining_repetitions, current_status == RUNNING_SCREEN_ON);
+                print_progress_message(
+                    &top_screen_console,
+                    &bottom_screen_console,
+                    remaining_seconds,
+                    remaining_repetitions,
+                    current_status == RUNNING_SCREEN_ON
+                );
             }
 
-            //FIXME this is just for quick testing and will be removed
-            if (keys_down & KEY_Y) {
-                current_status = MAIN_MENU;
+            if (
+                current_status == RUNNING_SCREEN_OFF &&
+                keys_held & (KEY_UP | KEY_LEFT| KEY_DOWN | KEY_RIGHT | KEY_X)
+            ) {
+                print_warning_message(
+                    &top_screen_console,
+                    &bottom_screen_console
+                );
             }
         }
     }
