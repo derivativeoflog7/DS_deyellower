@@ -7,7 +7,7 @@
 #define DEBUG_BUFFER_SIZE 50
 
 int remaining_seconds;
-void time_handler() {
+void timer_handler() {
     remaining_seconds--;
 }
 
@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     int backlight_level_buffer; // yes, I could reuse the above, but I don't want to deal with that
     int remaining_repetitions = 0; // init to avoid the compiler complaining about it
     int current_backlight_top, current_backlight_bottom, last_backlight_top, last_backlight_bottom;
+    int temp;
 
     // Constants
     const ConsoleType CONSOLE_TYPE = detect_console_type();
@@ -97,13 +98,13 @@ int main(int argc, char **argv) {
                         mode,
                         screen_on_length_minutes,
                         &remaining_seconds,
-                        &time_handler,
                         &backdrop_color,
                         &current_cycling_phase
                     );
                     disableSleep();
                     remaining_repetitions = repetition_count - 1;
                     current_status = RUNNING_SCREEN_ON;
+                    timerStart(0, ClockDivider_1024, timerFreqToTicks_1024(1), timer_handler);
                 }
                 break;
 
@@ -163,10 +164,14 @@ int main(int argc, char **argv) {
 
             // ===Setting menus with numerical input===
             // Number input is printed and handled further down below
+            // TODO: handle input of 0 in screen on time or repetition count more gracefully
             case SCREEN_ON_LENGTH_MENU:
                 printf("Screen on length (minutes):\n\n");
-                if (keys_down & KEY_A)
-                    screen_on_length_minutes = buffer_to_int(number_input_buffer);
+                if (keys_down & KEY_A) {
+                    temp = buffer_to_int(number_input_buffer);
+                    if (temp > 0)
+                        screen_on_length_minutes = temp;
+                }
                 break;
 
             case SCREEN_OFF_LENGTH_MENU:
@@ -177,8 +182,11 @@ int main(int argc, char **argv) {
 
             case REPETITION_COUNT_MENU:
                 printf("Repetition count:\n\n");
-                if (keys_down & KEY_A)
-                    repetition_count = buffer_to_int(number_input_buffer);
+                if (keys_down & KEY_A) {
+                    temp = buffer_to_int(number_input_buffer);
+                    if (temp > 0)
+                        repetition_count = temp;
+                }
                 break;
 
             // ===Backlight level menu===
@@ -228,8 +236,16 @@ int main(int argc, char **argv) {
                 if (remaining_seconds <= 0) {
                     if (remaining_repetitions <= 0)
                         systemShutDown();
-                    init_screen_off_phase(screen_off_length_minutes, &remaining_seconds, &time_handler);
-                    current_status = RUNNING_SCREEN_OFF;
+                    // If screen off length is greater than 0, switch to screen off phase...
+                    if (screen_off_length_minutes > 0) {
+                        init_screen_off_phase(screen_off_length_minutes, &remaining_seconds);
+                        current_status = RUNNING_SCREEN_OFF;
+                    }
+                    // ...otherwise, just reset timer and decrease remaining repetitions
+                    else {
+                        remaining_repetitions--;
+                        remaining_seconds = screen_on_length_minutes * 60;
+                    }
                 }
                 break;
             case RUNNING_SCREEN_OFF:
@@ -239,7 +255,6 @@ int main(int argc, char **argv) {
                         mode,
                         screen_off_length_minutes,
                         &remaining_seconds,
-                        &time_handler,
                         &backdrop_color,
                         &current_cycling_phase
                     );
@@ -312,6 +327,7 @@ int main(int argc, char **argv) {
                 );
             }
 
+            // Print warning message if in screen off phase and the user has turned the screen on
             if (
                 current_status == RUNNING_SCREEN_OFF &&
                 keys_held & (KEY_UP | KEY_LEFT| KEY_DOWN | KEY_RIGHT | KEY_X)

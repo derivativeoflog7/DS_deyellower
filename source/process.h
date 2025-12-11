@@ -23,15 +23,13 @@ void init_screen_on_phase(
     Mode mode,
     int minutes,
     int* seconds,
-    void* timer_handler,
     u16* backdrop_color,
     CyclingPhase* current_cycling_phase
 );
 
 void init_screen_off_phase (
     int minutes,
-    int* seconds,
-    void* timer_handler
+    int* seconds
 );
 
 void handleBacklight(

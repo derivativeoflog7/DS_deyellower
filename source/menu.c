@@ -149,6 +149,14 @@ void print_modes_menu (
     for (int i = 0; i < ARRAY_LENGTH(MODE_ENTRIES); i++) {
         print_list_line(bottom_screen_console, i == pos, MODE_ENTRIES[i].text);
     }
+    printf("\n\n");
+    consoleSetColor(bottom_screen_console, CONSOLE_RED);
+    printf("The cycling colors mode is\n");
+    printf("experimental, and testing is\n");
+    printf("required to understand it's\n");
+    printf("effectiveness in various\n");
+    printf("circumstances\n");
+    consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
     print_submenu_bottom_text(bottom_screen_console, 1);
 }
 

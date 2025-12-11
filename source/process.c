@@ -143,24 +143,20 @@ void init_screen_on_phase (
     const Mode mode,
     const int minutes,
     int* seconds,
-    void* timer_handler,
     u16* backdrop_color,
     CyclingPhase *current_cycling_phase
 ) {
     *backdrop_color = mode == WHITE_SCREEN ? WHITE : BLACK;
     *current_cycling_phase = BLACK_TO_BLUE;
     set_seconds(minutes, seconds);
-    timerStart(0, ClockDivider_1024, timerFreqToTicks_1024(1), timer_handler);
 }
 
 // Init screen off phase by setting the timer
 void init_screen_off_phase (
     const int minutes,
-    int* seconds,
-    void* timer_handler
+    int* seconds
 ) {
     set_seconds(minutes, seconds);
-    timerStart(0, ClockDivider_1024, timerFreqToTicks_1024(1), timer_handler);
 }
 
 static void _print_warning_message (
