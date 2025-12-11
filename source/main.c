@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
     // Working variables
     Status current_status = MAIN_MENU;
     u16 keys_held, keys_down; // for buttons
-    int menu_position = 0, in_setting_submenu;
+    int submenu_position = 0, settings_menu_position = 0, in_setting_submenu;
     int number_input_buffer[NUMBER_INPUT_LENGTH];
     int backlight_level_buffer;
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
                 printf("Press X for settings\n");
                 printf("Press START to power off\n\t(at any time)\n");
                 if (keys_down & KEY_X) {
-                    menu_position = 0;
+                    settings_menu_position = 0;
                     current_status = SETTINGS_MENU;
                 }
                 else if (keys_down & KEY_A) {
@@ -89,14 +89,14 @@ int main(int argc, char **argv) {
 
             // ===Setting menus with a list===
             case SETTINGS_MENU:
-                print_settings_menu(&bottom_screen_console, menu_position);
+                print_settings_menu(&bottom_screen_console, settings_menu_position);
                 if (keys_down & KEY_B)
                     current_status = MAIN_MENU;
                 else if (keys_down & KEY_A) {
                     // Handle entering a settings submenu
 
-                    current_status = get_settings_target(menu_position);
-                    menu_position = 0;
+                    current_status = get_settings_target(settings_menu_position);
+                    submenu_position = 0;
                     // Copy corresponding value to number input buffer
                     if (current_status == SCREEN_ON_LENGTH_MENU)
                         int_to_buffer(screen_on_length, number_input_buffer);
@@ -107,30 +107,38 @@ int main(int argc, char **argv) {
                     else if (current_status == BACKLIGHT_LEVEL_MENU)
                         backlight_level_buffer = backlight_level;
                 }
-                else if (keys_down & KEY_UP && menu_position > 0)
-                    menu_position--;
-                else if (keys_down & KEY_DOWN && menu_position < SETTING_ENTRIES_COUNT - 1)
-                    menu_position++;
+                else if (keys_down & KEY_UP) {
+                    if (settings_menu_position > 0)
+                        settings_menu_position--;
+                    else
+                        settings_menu_position = SETTING_ENTRIES_COUNT - 1;
+                }
+                else if (keys_down & KEY_DOWN) {
+                    if (settings_menu_position < SETTING_ENTRIES_COUNT - 1)
+                        settings_menu_position++;
+                    else
+                        settings_menu_position = 0;
+                }
                 break;
 
             case SELECT_SCREENS_MENU:
-                print_screens_menu(&bottom_screen_console, menu_position);
+                print_screens_menu(&bottom_screen_console, submenu_position);
                 if (keys_down & KEY_A)
-                    screens = get_screen_target(menu_position);
-                else if (keys_down & KEY_UP && menu_position > 0)
-                    menu_position--;
-                else if (keys_down & KEY_DOWN && menu_position < SCREEN_ENTRIES_COUNT - 1)
-                    menu_position++;
+                    screens = get_screen_target(submenu_position);
+                else if (keys_down & KEY_UP && submenu_position > 0)
+                    submenu_position--;
+                else if (keys_down & KEY_DOWN && submenu_position < SCREEN_ENTRIES_COUNT - 1)
+                    submenu_position++;
                 break;
 
             case MODE_MENU:
-                print_modes_menu(&bottom_screen_console, menu_position);
+                print_modes_menu(&bottom_screen_console, submenu_position);
                 if (keys_down & KEY_A)
-                    mode = get_mode_target(menu_position);
-                else if (keys_down & KEY_UP && menu_position > 0)
-                    menu_position--;
-                else if (keys_down & KEY_DOWN && menu_position < MODE_ENTRIES_COUNT - 1)
-                    menu_position++;
+                    mode = get_mode_target(submenu_position);
+                else if (keys_down & KEY_UP && submenu_position > 0)
+                    submenu_position--;
+                else if (keys_down & KEY_DOWN && submenu_position < MODE_ENTRIES_COUNT - 1)
+                    submenu_position++;
                 break;
 
             // ===Setting menus with numerical input===
@@ -180,20 +188,20 @@ int main(int argc, char **argv) {
             current_status == SCREEN_OFF_LENGTH_MENU ||
             current_status == REPETITION_COUNT_MENU)
         ) {
-            print_number_input(&bottom_screen_console, menu_position, number_input_buffer);
-            if (keys_down & KEY_LEFT && menu_position > 0)
-                menu_position--;
-            else if (keys_down & KEY_RIGHT && menu_position < NUMBER_INPUT_LENGTH - 1)
-                menu_position++;
-            else if (keys_down & KEY_UP && number_input_buffer[menu_position] < 9)
-                number_input_buffer[menu_position]++;
-            else if (keys_down & KEY_DOWN && number_input_buffer[menu_position] > 0)
-                number_input_buffer[menu_position]--;
+            print_number_input(&bottom_screen_console, submenu_position, number_input_buffer);
+            if (keys_down & KEY_LEFT && submenu_position > 0)
+                submenu_position--;
+            else if (keys_down & KEY_RIGHT && submenu_position < NUMBER_INPUT_LENGTH - 1)
+                submenu_position++;
+            else if (keys_down & KEY_UP && number_input_buffer[submenu_position] < 9)
+                number_input_buffer[submenu_position]++;
+            else if (keys_down & KEY_DOWN && number_input_buffer[submenu_position] > 0)
+                number_input_buffer[submenu_position]--;
         }
 
         // Handle leaving a settings submenu when pressing A or B
         if (in_setting_submenu && keys_down & (KEY_B | KEY_A)) {
-            menu_position = 0;
+            submenu_position = 0;
             current_status = SETTINGS_MENU;
         }
     }
