@@ -23,9 +23,9 @@ int buffer_to_int(int* const buf) {
 
 ConsoleType detect_console_type() {
     /*
-    https://blocksds.skylyrac.net/libnds/system_8h.html#a9bd93bee5409c05451447034b250959b
-    It's probably possible to do this in a more elegant way by reading some registers directly (which seemingly
-    is how the library determines if the DS has backlight control or not), but this will suffice for now
+    * https://blocksds.skylyrac.net/libnds/system_8h.html#a9bd93bee5409c05451447034b250959b
+    * It's probably possible to do this in a more elegant way by reading some registers directly (which seemingly
+    * is how the library determines if the DS has backlight control or not), but this will suffice for now
     */
     u32 test = systemSetBacklightLevel(1);
     systemSetBacklightLevel(5);
