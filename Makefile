@@ -2,8 +2,8 @@ BLOCKSDS	?= /opt/blocksds/core
 
 # User config
 
-NAME		:= ds_deyellow_test
-GAME_TITLE	:= DS deyellow test
+NAME		:= ds_deyellower
+GAME_TITLE	:= DS_deyellower
 GAME_SUBTITLE	:= derivativeoflog7
 
 
