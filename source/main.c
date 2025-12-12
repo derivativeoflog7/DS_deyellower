@@ -59,6 +59,9 @@ int main(int argc, char **argv) {
         keys_down = keysDown();
         keys_held = keysHeld();
 
+        if (keys_down & KEY_START)
+            systemShutDown();
+
         is_in_setting_submenu = 0;
         if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
             is_in_setting_submenu = 1;

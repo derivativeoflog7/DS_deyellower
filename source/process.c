@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include "process.h"
 
-#include "../../../../../opt/blocksds/core/libs/libnds/include/nds/arm9/console.h"
-
 #define DEBUG_BUFFER_SIZE 50
 
 void setBackdropBoth(u16 col) {
