@@ -64,7 +64,7 @@ void print_top_screen (
 ) {
     consoleSelect(top_screen_console);
     consoleClear();
-    printf("DS_deyellower v2.0\n");
+    printf("DS_deyellower v2.0.1\n");
     printf("by derivativeoflog7\n");
     printf("\n");
     printf("Detected console type:\n");
