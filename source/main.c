@@ -7,9 +7,12 @@
 #define DEBUG_BUFFER_SIZE 50
 
 int remaining_seconds;
+
 void timer_handler() {
     remaining_seconds--;
 }
+
+static void print_test_mode(PrintConsole* console);
 
 int main(int argc, char **argv) {
     // Working variables
@@ -66,7 +69,13 @@ int main(int argc, char **argv) {
         if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
             is_in_setting_submenu = 1;
 
-        // Print info on top screen if process is not running
+        // Clear both consoles
+        consoleSelect(&bottom_screen_console);
+        consoleClear();
+        consoleSelect(&top_screen_console);
+        consoleClear();
+
+        // Print info on top screen and clear bottom console if process is not running
         if (current_status < RUNNING_SCREEN_ON) {
             print_top_screen(
                 &top_screen_console,
@@ -80,9 +89,8 @@ int main(int argc, char **argv) {
             );
         }
 
-        // Clear bottom console
+        // Select bottom console
         consoleSelect(&bottom_screen_console);
-        consoleClear();
 
         // Handle input and printing in various menus
         switch(current_status) {
@@ -109,6 +117,8 @@ int main(int argc, char **argv) {
                     current_status = RUNNING_SCREEN_ON;
                     timerStart(0, ClockDivider_1024, timerFreqToTicks_1024(1), timer_handler);
                 }
+                else if (!(keys_held ^ TEST_MODE_COMBO))
+                    current_status = TEST_MODE_WARNING;
                 break;
 
             // ===Setting menus with a list===
@@ -265,6 +275,73 @@ int main(int argc, char **argv) {
                     current_status = RUNNING_SCREEN_ON;
                 }
                 break;
+            case TEST_MODE_WARNING:
+                consoleSetColor(&bottom_screen_console, CONSOLE_LIGHT_RED);
+                printf("This test mode is not meant\n");
+                printf("as a replacement for the normal\n");
+                printf("deyellowing process\n\n");
+                printf("Avoid rapidly and/or repeatedly\n");
+                printf("turning the screens on and off\n");
+                printf("and leaving them on for long\n");
+                printf("periods of time\n\n");
+                printf("I'm not responsible for damage\n");
+                printf("caused by the misuse of this\n");
+                printf("mode\n\n");
+                consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
+                printf("Press X to continue\n");
+                printf("Press any other button\n\tto go back");
+                if (keys_down & KEY_X) {
+                    current_status = TEST_MODE;
+                    consoleSetColor(&bottom_screen_console, CONSOLE_LIGHT_RED);
+                    consoleSetColor(&top_screen_console, CONSOLE_LIGHT_RED);
+                    setBackdropBoth(WHITE);
+                }
+                else if (keys_down)
+                    current_status = MAIN_MENU;
+                break;
+            case TEST_MODE:
+                // Reset colors and backlight and return to main menu
+                if (keys_down & KEY_SELECT) {
+                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
+                    consoleSetColor(&top_screen_console, CONSOLE_WHITE);
+                    setBackdropBoth(BLACK);
+                    systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
+                    current_status = MAIN_MENU;
+                }
+                else if (keys_held & KEY_Y) {
+                    if (keys_down & KEY_UP)
+                        powerOn(POWER_LCD);
+                    else if (keys_down & KEY_DOWN)
+                        powerOff(POWER_LCD);
+                }
+                else if (keys_held & KEY_L) {
+                    if (keys_down & KEY_UP)
+                        powerOn(PM_BACKLIGHT_TOP);
+                    else if (keys_down & KEY_DOWN)
+                        powerOff(PM_BACKLIGHT_TOP);
+                }
+                else if (keys_held & KEY_R) {
+                    if (keys_down & KEY_UP)
+                        powerOn(PM_BACKLIGHT_BOTTOM);
+                    else if (keys_down & KEY_DOWN)
+                        powerOff(PM_BACKLIGHT_BOTTOM);
+                }
+                else if (keys_held & KEY_X) {
+                    if (keys_down & KEY_UP)
+                        systemSetBacklightLevel(0);
+                    else if (keys_down & KEY_RIGHT)
+                        systemSetBacklightLevel(1);
+                    else if (keys_down & KEY_DOWN)
+                        systemSetBacklightLevel(2);
+                    else if (keys_down & KEY_LEFT)
+                        systemSetBacklightLevel(3);
+                    else if (keys_down & KEY_A)
+                        systemSetBacklightLevel(4);
+                    else if (keys_down & KEY_B)
+                        systemSetBacklightLevel(5);
+                }
+                print_test_mode(&top_screen_console); //FIXME why isn't it printing on the top console???
+                print_test_mode(&bottom_screen_console);
         }
 
         // Print number input and text at the bottom and handle dpad
@@ -342,4 +419,20 @@ int main(int argc, char **argv) {
             }
         }
     }
+}
+
+static void print_test_mode(PrintConsole* console) {
+    consoleSelect(console);
+    consoleSetCursor(
+        console,
+        console->consoleWidth / 2 - 2,
+        console->consoleHeight / 2
+    );
+    printf("TEST");
+    consoleAddToCursor(
+        console,
+        -4,
+        1
+    );
+    printf("MODE");
 }
