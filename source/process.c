@@ -163,8 +163,8 @@ static void _print_warning_message (
     consoleSetCursor(console, 0, console->consoleHeight - 3);
     consoleSetColor(console, CONSOLE_LIGHT_RED);
     printf("Avoid turning the screen on\n");
-    printf("repeatedly while in the screen\n");
-    printf("off phase");
+    printf("repeatedly and/or rapidly while\n");
+    printf("in the screen off phase");
 }
 
 static void _print_progress_message (
