@@ -41,10 +41,16 @@ void setBacklightAdjusted(int backlight_level, ConsoleType console_type) {
      * https://blocksds.skylyrac.net/libnds/system_8h.html#a9bd93bee5409c05451447034b250959b
      * On DSi, just set the level as is
      * On DS (lite) with backlight control, add 1 to the backlight level, as they are shifted by one (except 0)
-     * On DS without backlight control, libnds internally maps all non-zero values to backlight on
+     * On DS without backlight control, set to 5 if backlight level is 1
+     * This ensures max backlight level works even if the console gets misidentified
      */
-    systemSetBacklightLevel(
-        console_type == DS_WITH_BACKLIGHT_CONTROL && backlight_level > 0 ?
-        backlight_level + 1 : backlight_level
-    );
+    assert(backlight_level > 0);
+    int actual_level = backlight_level;
+    if (backlight_level > 0) {
+        if (console_type == DS_WITH_BACKLIGHT_CONTROL)
+            actual_level++;
+        else if (console_type == DS_WITHOUT_BACKLIGHT_CONTROL)
+            actual_level = 5;
+    }
+    systemSetBacklightLevel(actual_level);
 }
