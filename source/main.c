@@ -300,11 +300,12 @@ int main(int argc, char **argv) {
                     current_status = MAIN_MENU;
                 break;
             case TEST_MODE:
-                // Reset colors and return to main menu
+                // Reset colors and backlight and return to main menu
                 if (keys_down & KEY_SELECT) {
                     consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
                     consoleSetColor(&top_screen_console, CONSOLE_WHITE);
                     setBackdropBoth(BLACK);
+                    systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
                     current_status = MAIN_MENU;
                 }
                 else if (keys_held & KEY_Y) {

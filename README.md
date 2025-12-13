@@ -24,6 +24,13 @@ As part of this, it will try to detect if it's running on a DSi or a DS; avoid r
 
 Both of these features are experimental, as the effectiveness of the cycling colors and/or lower backlight levels in different circumstances have to be tested and validated.
 
+## Test mode
+A test mode is present to manually change the backlight level and turn the screens on or off.  
+**This test mode is not meant as a replacement for the normal deyellowing process. Avoid rapidly and/or repeatedly turning the screens on and off, and leaving them on for long periods of time. I'm not responsible for damage caused by the misuse of this mode.**  
+To access this mode, press L+R+left+Y+Select on the main menu.  
+Hold L and press up to turn the top screen backlight on, or down to turn it off; hold R for the bottom screen instead (calls [`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce) with argument [`PM_BACKLIGHT_TOP`/`PM_BACKLIGHT_BOTTOM`]([`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce)\).  
+Hold Y and press up to turn on the screens, or down to turn them off (calls [`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce) with argument [`POWER_LCD`]([`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce)\)).  
+Hold X and press up to set backlight level to 0, right for 1, down for 2, left for 3, A for 4, B for 5 (calls [`systemSetBacklightLevel`]([`PM_BACKLIGHT_TOP`/`PM_BACKLIGHT_BOTTOM`]([`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce)\)) with the corresponding argument).
 
 # Usage
 For nativating the menus, follow the on-screen instructions.  
