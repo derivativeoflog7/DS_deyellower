@@ -25,7 +25,7 @@ As part of this, it will try to detect if it's running on a DSi or a DS; avoid r
 Both of these features are experimental, as the effectiveness of the cycling colors and/or lower backlight levels in different circumstances have to be tested and validated.
 
 ## Test mode
-A test mode is present to manually change the backlight level and turn the screens on or off.  
+A test mode is present that allows manually change the backlight level and turn the screens on or off.  
 **This test mode is not meant as a replacement for the normal deyellowing process. Avoid rapidly and/or repeatedly turning the screens on and off, and leaving them on for long periods of time. I'm not responsible for damage caused by the misuse of this mode.**  
 To access this mode, press L+R+left+Y+Select on the main menu.  
 Hold L and press up to turn the top screen backlight on, or down to turn it off; hold R for the bottom screen instead (calls [`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce) with argument [`PM_BACKLIGHT_TOP`/`PM_BACKLIGHT_BOTTOM`]([`powerOn`/`powerOff`](https://blocksds.skylyrac.net/libnds/system_8h.html#a033c884f09d843121781af8bc212f8ce)\).  
@@ -35,8 +35,8 @@ Hold X and press up to set backlight level to 0, right for 1, down for 2, left f
 # Usage
 For nativating the menus, follow the on-screen instructions.  
 Once the process is started, hold dpad up to temporarly show a blue screen at maximum brightness, right for yellow, down for white, and left for black; hold A to print the remaining time and number of repetitions.  
-When the screens or backlight are off, the screens/backlight will temporarly turn back on when a button is being held, but please avoid doing it repeatedly during the screen off phase as it's probably not the best for the screens and nullifies the whole purpose of letting the screens rest.  
-It is possible to disable the screen off phase by setting it's duration to 0, but this is not generally recommended especially at higher backlight levels.
+When the screens or backlight are off, the screens/backlight will temporarly turn back on when a button is being held, but please avoid doing it repeatedly and/or rapidly during the screen off phase as it's probably not the best for the screens and nullifies the whole purpose of letting the screens rest.  
+It is possible to disable the screen off phase by setting it's duration to 0, but **this is not generally recommended especially at higher backlight levels**.
 
 # Epilepsy warning
 The cycling colors mode features rapidly fading colors.
