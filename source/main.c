@@ -266,7 +266,7 @@ int main(int argc, char **argv) {
                 if (remaining_seconds <= 0) {
                     init_screen_on_phase(
                         mode,
-                        screen_off_length_minutes,
+                        screen_on_length_minutes,
                         &remaining_seconds,
                         &backdrop_color,
                         &current_cycling_phase
