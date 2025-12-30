@@ -215,6 +215,13 @@ void print_top_screen (
     consoleClear();
     // Print info on top screen if process is not running
     if (current_status < RUNNING_SCREEN_ON) {
+        consoleSetColor(top_screen_console, CONSOLE_WHITE);
+        /*
+         * FIXME:
+         * I can't understand why, but setting the console color in main.c
+         * under case TEST_MODE fails to reset the color to white when
+         * exiting from test mode, so it's also done here
+         */
         printf("DS_deyellower v%s\n", VERSION);
         printf("by derivativeoflog7\n");
         printf("\n");
@@ -236,8 +243,10 @@ void print_top_screen (
         print_backlight_level(backlight_level, console_type);
         printf("\n");
     }
-    else if (current_status == TEST_MODE)
+    else if (current_status == TEST_MODE) {
+        consoleSetColor(top_screen_console, CONSOLE_LIGHT_RED);
         print_test_mode(top_screen_console);
+    }
     else if ((current_status == RUNNING_SCREEN_ON || current_status == RUNNING_SCREEN_OFF) && do_print_progress) {
         print_progress_message(
             top_screen_console,
@@ -322,6 +331,7 @@ void print_bottom_screen(
             printf("Press SELECT to quit test mode");
             break;
         case TEST_MODE:
+            consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_RED);
             print_test_mode(bottom_screen_console);
             break;
     }

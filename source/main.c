@@ -11,6 +11,7 @@ int do_reprint_top_screen = 1, do_reprint_bottom_screen = 1, do_print_progress =
 
 void timer_handler() {
     remaining_seconds--;
+    // Reprint if X is being held when a second elapses (also handles changing phases)
     if (do_print_progress) {
         do_reprint_bottom_screen = 1;
         do_reprint_top_screen = 1;
@@ -24,10 +25,10 @@ int main(int argc, char **argv) {
     u16 backdrop_color, keys_held, keys_down;
     int submenu_position = 0, settings_menu_position = 0, is_in_setting_submenu;
     int number_input_buffer[NUMBER_INPUT_LENGTH];
-    int backlight_level_buffer; // yes, I could reuse the above, but I don't want to deal with that
     int remaining_repetitions = 0; // init to avoid the compiler complaining about it
+    int backlight_level_buffer = 0; // same as above
     int current_backlight_top, current_backlight_bottom, last_backlight_top, last_backlight_bottom;
-    int temp;
+    int conv_result;
 
     // Constants
     const ConsoleType CONSOLE_TYPE = detect_console_type();
@@ -72,6 +73,7 @@ int main(int argc, char **argv) {
         if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
             is_in_setting_submenu = 1;
 
+        // Reprint screens if needed, all printing is done here
         if (do_reprint_top_screen) {
             print_top_screen(
                 &top_screen_console,
@@ -110,7 +112,7 @@ int main(int argc, char **argv) {
         if (current_status >= SETTINGS_MENU && current_status <= BACKLIGHT_LEVEL_MENU
             && keys_down & (KEY_B | KEY_A | KEY_UP | KEY_DOWN))
             do_reprint_bottom_screen = 1;
-        // ..and additionally if left or right were pressed on a number input
+        // ...and additionally if left or right were pressed on a number input
         if (current_status >= SCREEN_ON_LENGTH_MENU && current_status <= REPETITION_COUNT_MENU
             && keys_down & (KEY_LEFT | KEY_RIGHT))
             do_reprint_bottom_screen = 1;
@@ -123,6 +125,11 @@ int main(int argc, char **argv) {
         // Handle input and printing in various menus
         switch(current_status) {
             case MAIN_MENU:
+                /*
+                 *All of these reprint the bottom screen,
+                and all except entering settings also reprint the top
+                */
+
                 // Enter settings menu
                 if (keys_down & KEY_X) {
                     do_reprint_bottom_screen = 1;
@@ -161,7 +168,7 @@ int main(int argc, char **argv) {
                 else if (keys_down & KEY_A) {
                     current_status = get_settings_target(settings_menu_position);
                     submenu_position = 0;
-                    // Copy corresponding value to the input buffer
+                    // Copy corresponding value to the input buffer if necessary
                     if (current_status == SCREEN_ON_LENGTH_MENU)
                         int_to_buffer(screen_on_length_minutes, number_input_buffer);
                     else if (current_status == SCREEN_OFF_LENGTH_MENU)
@@ -205,13 +212,13 @@ int main(int argc, char **argv) {
                 break;
 
             // ===Setting menus with numerical input===
-            // Number input is printed and handled further down below
+            // Number input is handled further down below
             // TODO: handle input of 0 in screen on time or repetition count more gracefully
             case SCREEN_ON_LENGTH_MENU:
                 if (keys_down & KEY_A) {
-                    temp = buffer_to_int(number_input_buffer);
-                    if (temp > 0)
-                        screen_on_length_minutes = temp;
+                    conv_result = buffer_to_int(number_input_buffer);
+                    if (conv_result > 0)
+                        screen_on_length_minutes = conv_result;
                 }
                 break;
 
@@ -222,9 +229,9 @@ int main(int argc, char **argv) {
 
             case REPETITION_COUNT_MENU:
                 if (keys_down & KEY_A) {
-                    temp = buffer_to_int(number_input_buffer);
-                    if (temp > 0)
-                        repetition_count = temp;
+                    conv_result = buffer_to_int(number_input_buffer);
+                    if (conv_result > 0)
+                        repetition_count = conv_result;
                 }
                 break;
 
@@ -243,6 +250,7 @@ int main(int argc, char **argv) {
 
             // ===Running===
             case RUNNING_SCREEN_ON:
+                // Note that chaning the backdrop does not require a reprint
                 setBackdropBoth(backdrop_color);
                 // Cycle colors black→blue→yellow→white
                 if (mode == CYCLING_COLORS) {
@@ -300,13 +308,14 @@ int main(int argc, char **argv) {
                     current_status = RUNNING_SCREEN_ON;
                 }
                 break;
+
+            // ===Test mode===
             case TEST_MODE_WARNING:
                 if (keys_down & KEY_X) {
                     current_status = TEST_MODE;
+                    // Console color is changed by print_top_screen/print_bottom_screen
                     do_reprint_bottom_screen = 1;
                     do_reprint_top_screen = 1;
-                    consoleSetColor(&bottom_screen_console, CONSOLE_LIGHT_RED);
-                    consoleSetColor(&top_screen_console, CONSOLE_LIGHT_RED);
                     setBackdropBoth(WHITE);
                 }
                 else if (keys_down) {
@@ -318,13 +327,14 @@ int main(int argc, char **argv) {
             case TEST_MODE:
                 // Reset colors and backlight and return to main menu
                 if (keys_down & KEY_SELECT) {
-                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
-                    consoleSetColor(&top_screen_console, CONSOLE_WHITE);
                     do_reprint_bottom_screen = 1;
                     do_reprint_top_screen = 1;
                     setBackdropBoth(BLACK);
                     systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
                     current_status = MAIN_MENU;
+                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
+                    consoleSetColor(&top_screen_console, CONSOLE_WHITE);
+                    // FIXME: the above doesn't work, menu.c has a workaround
                 }
                 else if (keys_held & KEY_Y) {
                     if (keys_down & KEY_UP)
@@ -401,6 +411,7 @@ int main(int argc, char **argv) {
                 setBackdropBoth(WHITE);
             else if (keys_held & KEY_LEFT)
                 setBackdropBoth(BLACK);
+            // Reprint if X was released or just pressed
             if (keys_held & KEY_X) {
                 if (!do_print_progress) {
                     do_reprint_bottom_screen = 1;
