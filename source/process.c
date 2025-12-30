@@ -157,48 +157,22 @@ void init_screen_off_phase (
     set_seconds(minutes, seconds);
 }
 
-static void _print_warning_message (
-    PrintConsole *console
-) {
-    consoleSetCursor(console, 0, console->consoleHeight - 3);
-    consoleSetColor(console, CONSOLE_LIGHT_RED);
-    printf("Avoid turning the screen on\n");
-    printf("repeatedly and/or rapidly while\n");
-    printf("in the screen off phase");
-}
-
-static void _print_progress_message (
-    PrintConsole *console,
+void print_progress_message(
+    PrintConsole* console,
     const int remaining_seconds,
     const int remaining_repetitions,
-    const int is_screen_on_phase
+    const int is_screen_off_phase
 ) {
     consoleSetColor(console, CONSOLE_LIGHT_MAGENTA);
-    printf("Screen %s phase\n\n", is_screen_on_phase ? "ON" : "OFF");
+    printf("Screen %s phase\n\n", is_screen_off_phase ? "OFF" : "ON");
     printf("Remaining time for phase:\n");
     printf("%d:%02d:%02d\n\n", remaining_seconds / 60 / 60, remaining_seconds / 60 % 60, remaining_seconds % 60);
     printf("Remaining repetitions: %d\n", remaining_repetitions);
-}
-
-void print_progress_message(
-    PrintConsole *top_screen_console,
-    PrintConsole *bottom_screen_console,
-    const int remaining_seconds,
-    const int remaining_repetitions,
-    const int is_screen_on_phase
-) {
-    consoleSelect(bottom_screen_console);
-    _print_progress_message(bottom_screen_console, remaining_seconds, remaining_repetitions, is_screen_on_phase);
-    consoleSelect(top_screen_console);
-    _print_progress_message(top_screen_console, remaining_seconds, remaining_repetitions, is_screen_on_phase);
-}
-
-void print_warning_message(
-    PrintConsole *top_screen_console,
-    PrintConsole *bottom_screen_console
-) {
-    consoleSelect(bottom_screen_console);
-    _print_warning_message(bottom_screen_console);
-    consoleSelect(top_screen_console);
-    _print_warning_message(top_screen_console);
+    if (is_screen_off_phase) {
+        consoleSetCursor(console, 0, console->consoleHeight - 3);
+        consoleSetColor(console, CONSOLE_LIGHT_RED);
+        printf("Avoid turning the screen on\n");
+        printf("repeatedly and/or rapidly while\n");
+        printf("in the screen off phase");
+    }
 }

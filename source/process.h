@@ -46,16 +46,10 @@ void handleBacklight(
 );
 
 void print_progress_message(
-    PrintConsole *top_screen_console,
-    PrintConsole *bottom_screen_console,
+    PrintConsole* console,
     int remaining_seconds,
     int remaining_repetitions,
-    int is_screen_on_phase
-);
-
-void print_warning_message(
-    PrintConsole *top_screen_console,
-    PrintConsole *bottom_screen_console
+    int is_screen_off_phase
 );
 
 void setBackdropBoth(u16 col);
