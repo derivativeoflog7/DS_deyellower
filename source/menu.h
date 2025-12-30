@@ -5,47 +5,32 @@
 #include <stdio.h>
 #include <nds.h>
 
-void print_backlight_level (
-    int backlight_level,
-    ConsoleType console_type
-);
-
 void print_top_screen (
     PrintConsole* top_screen_console,
+    Status current_status,
     int screen_on_length,
     int screen_off_length,
     int repetition_count,
     int backlight_level,
+    int do_print_progress,
+    int remaining_seconds,
+    int remaining_repetitions,
     Screens screens,
     Mode mode,
     ConsoleType console_type
 );
 
-void print_settings_menu (
+void print_bottom_screen(
     PrintConsole* bottom_screen_console,
-    int pos
-);
-
-void print_screens_menu (
-    PrintConsole* bottom_screen_console,
-    int pos
-);
-
-void print_modes_menu (
-    PrintConsole* bottom_screen_console,
-    int pos
-);
-
-void print_backlight_level_menu (
-    PrintConsole* bottom_screen_console,
-    int level,
-    ConsoleType console_type
-);
-
-void print_number_input (
-    PrintConsole* bottom_screen_console,
-    int pos,
-    const int* number_input_buffer
+    Status current_status,
+    int settings_menu_position,
+    int submenu_position,
+    int do_print_progress,
+    int remaining_seconds,
+    int remaining_repetitions,
+    int* number_input_buffer,
+    int backlight_level_buffer,
+    ConsoleType CONSOLE_TYPE
 );
 
 int setting_entries_count();

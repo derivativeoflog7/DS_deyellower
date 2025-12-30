@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "common.h"
+#include "process.h"
 
 typedef struct {
     const Status target;
@@ -38,8 +39,8 @@ static const ModeEntry MODE_ENTRIES[] = {
 
 // Print backlight level and text next to it for max/off
 void print_backlight_level (
-    int backlight_level,
-    ConsoleType console_type
+    const int backlight_level,
+    const ConsoleType console_type
 ) {
     printf("%d ", backlight_level);
     if (backlight_level == 0)
@@ -52,41 +53,23 @@ void print_backlight_level (
         printf("(max)");
 }
 
-void print_top_screen (
-    PrintConsole* const top_screen_console,
-    const int screen_on_length,
-    const int screen_off_length,
-    const int repetition_count,
-    const int backlight_level,
-    const Screens screens,
-    const Mode mode,
-    const ConsoleType console_type
-) {
-    consoleSelect(top_screen_console);
-    printf("DS_deyellower v%s\n", VERSION);
-    printf("by derivativeoflog7\n");
-    printf("\n");
-    printf("Detected console type:\n");
-    if (console_type == DSI)
-        printf("DSi\n");
-    else if (console_type == DS_WITH_BACKLIGHT_CONTROL)
-        printf("DS (Lite) with backlight control"); // No newline as it fits a whole row
-    else
-        printf("DS without backlight control\n");
-    printf("\nCurrent settings: \n");
-    printf("Top screen: %s\n", screens == BOTTOM ? "NO" : "YES");
-    printf("Bottom screen: %s\n", screens == TOP ? "NO" : "YES");
-    printf("Screen on length: %umin\n", screen_on_length);
-    printf("Screen off length: %umin\n", screen_off_length);
-    printf("Repetition count: %u\n", repetition_count);
-    printf("Mode: %s\n", mode == WHITE_SCREEN ? "white screen" : "cycling colors");
-    printf("Backlight level: ");
-    print_backlight_level(backlight_level, console_type);
-    printf("\n");
+static void print_test_mode(PrintConsole* console) {
+    consoleSetCursor(
+        console,
+        console->consoleWidth / 2 - 2,
+        console->consoleHeight / 2
+    );
+    printf("TEST");
+    consoleAddToCursor(
+        console,
+        -4,
+        1
+    );
+    printf("MODE");
 }
 
 // Print bottom text of submenus
-void print_submenu_bottom_text(
+static void print_submenu_bottom_text(
     PrintConsole* const bottom_screen_console,
     const int do_print_A // print "Press A to confirm"
 ) {
@@ -99,7 +82,7 @@ void print_submenu_bottom_text(
 }
 
 // Prints a line of a list menu, with color and arrow if needed
-void print_list_line (
+static void print_list_line (
     PrintConsole* const bottom_screen_console,
     const int is_selected,
     const char* const text
@@ -117,7 +100,7 @@ void print_list_line (
 }
 
 // Prints the main settings menu
-void print_settings_menu (
+static void print_settings_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
 ) {
@@ -130,7 +113,7 @@ void print_settings_menu (
 }
 
 // Prints the screens setting menu
-void print_screens_menu (
+static void print_screens_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
 ) {
@@ -141,7 +124,7 @@ void print_screens_menu (
 }
 
 // Prints the modes setting menu
-void print_modes_menu (
+static void print_modes_menu (
     PrintConsole* const bottom_screen_console,
     const int pos
 ) {
@@ -160,7 +143,7 @@ void print_modes_menu (
 }
 
 // Prints a number input
-void print_number_input (
+static void print_number_input (
     PrintConsole* const bottom_screen_console,
     const int pos,
     const int* const number_input_buffer
@@ -181,7 +164,7 @@ void print_number_input (
 }
 
 // Prints the backlight level setting menu
-void print_backlight_level_menu (
+static void print_backlight_level_menu (
     PrintConsole* const bottom_screen_console,
     const int level,
     const ConsoleType console_type
@@ -211,6 +194,137 @@ void print_backlight_level_menu (
     consoleSetCursor(bottom_screen_console, 0, bottom_screen_console->consoleHeight - 3);
     printf("Use dpad UP/DOWN to incr/decr");
     print_submenu_bottom_text(bottom_screen_console, 1);
+}
+
+void print_top_screen (
+    PrintConsole* const top_screen_console,
+    const Status current_status,
+    const int screen_on_length,
+    const int screen_off_length,
+    const int repetition_count,
+    const int backlight_level,
+    const int do_print_progress,
+    const int remaining_seconds,
+    const int remaining_repetitions,
+    const Screens screens,
+    const Mode mode,
+    const ConsoleType console_type
+) {
+    nocashMessage("Reprint bottom");
+    consoleSelect(top_screen_console);
+    consoleClear();
+    // Print info on top screen if process is not running
+    if (current_status < RUNNING_SCREEN_ON) {
+        printf("DS_deyellower v%s\n", VERSION);
+        printf("by derivativeoflog7\n");
+        printf("\n");
+        printf("Detected console type:\n");
+        if (console_type == DSI)
+            printf("DSi\n");
+        else if (console_type == DS_WITH_BACKLIGHT_CONTROL)
+            printf("DS (Lite) with backlight control"); // No newline as it fits a whole row
+        else
+            printf("DS without backlight control\n");
+        printf("\nCurrent settings: \n");
+        printf("Top screen: %s\n", screens == BOTTOM ? "NO" : "YES");
+        printf("Bottom screen: %s\n", screens == TOP ? "NO" : "YES");
+        printf("Screen on length: %umin\n", screen_on_length);
+        printf("Screen off length: %umin\n", screen_off_length);
+        printf("Repetition count: %u\n", repetition_count);
+        printf("Mode: %s\n", mode == WHITE_SCREEN ? "white screen" : "cycling colors");
+        printf("Backlight level: ");
+        print_backlight_level(backlight_level, console_type);
+        printf("\n");
+    }
+    else if (current_status == TEST_MODE)
+        print_test_mode(top_screen_console);
+    else if ((current_status == RUNNING_SCREEN_ON || current_status == RUNNING_SCREEN_OFF) && do_print_progress) {
+        print_progress_message(
+            top_screen_console,
+            remaining_seconds,
+            remaining_repetitions,
+            current_status == RUNNING_SCREEN_OFF
+        );
+    }
+}
+
+void print_bottom_screen(
+    PrintConsole* const bottom_screen_console,
+    const Status current_status,
+    const int settings_menu_position,
+    const int submenu_position,
+    const int do_print_progress,
+    const int remaining_seconds,
+    const int remaining_repetitions,
+    int* const number_input_buffer,
+    const int backlight_level_buffer,
+    const ConsoleType CONSOLE_TYPE
+) {
+    nocashMessage("Reprint top");
+    consoleSelect(bottom_screen_console);
+    consoleClear();
+    switch (current_status) {
+        case MAIN_MENU:
+            printf("Press A to begin\n");
+            printf("Press X for settings\n");
+            printf("Press START to power off\n\t(at any time)\n");
+            break;
+        case SETTINGS_MENU:
+            print_settings_menu(bottom_screen_console, settings_menu_position);
+            break;
+        case SELECT_SCREENS_MENU:
+            print_screens_menu(bottom_screen_console, submenu_position);
+            break;
+        case MODE_MENU:
+            print_modes_menu(bottom_screen_console, submenu_position);
+            break;
+        case SCREEN_ON_LENGTH_MENU:
+            printf("Screen on length (minutes):\n\n");
+            print_number_input(bottom_screen_console, submenu_position, number_input_buffer);
+            break;
+        case SCREEN_OFF_LENGTH_MENU:
+            printf("Screen off length (minutes):\n\n");
+            print_number_input(bottom_screen_console, submenu_position, number_input_buffer);
+            break;
+        case REPETITION_COUNT_MENU:
+            printf("Repetition count:\n\n");
+            print_number_input(bottom_screen_console, submenu_position, number_input_buffer);
+            break;
+        case BACKLIGHT_LEVEL_MENU:
+            print_backlight_level_menu(bottom_screen_console, backlight_level_buffer, CONSOLE_TYPE);
+            break;
+        case RUNNING_SCREEN_ON:
+        case RUNNING_SCREEN_OFF:
+            if (do_print_progress) {
+                print_progress_message(
+                    bottom_screen_console,
+                    remaining_seconds,
+                    remaining_repetitions,
+                    current_status == RUNNING_SCREEN_OFF
+                );
+            }
+            break;
+        case TEST_MODE_WARNING:
+            consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_RED);
+            printf("This test mode is not meant\n");
+            printf("as a replacement for the normal\n");
+            printf("deyellowing process\n\n");
+            printf("Avoid rapidly and/or repeatedly\n");
+            printf("turning the screens on and off\n");
+            printf("and leaving them on for long\n");
+            printf("periods of time\n\n");
+            printf("I'm not responsible for damage\n");
+            printf("caused by the misuse of this\n");
+            printf("mode\n\n");
+            consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
+            printf("Press X to continue\n");
+            printf("Press any other button\n\tto go back\n\n");
+            printf("Press SELECT to quit test mode");
+            break;
+        case TEST_MODE:
+            print_test_mode(bottom_screen_console);
+            break;
+    }
 }
 
 // Get the next status based on the position of the cursor in the main settings menu

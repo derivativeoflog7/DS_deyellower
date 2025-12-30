@@ -7,12 +7,15 @@
 #define DEBUG_BUFFER_SIZE 50
 
 int remaining_seconds;
+int do_reprint_top_screen = 1, do_reprint_bottom_screen = 1, do_print_progress = 0;
 
 void timer_handler() {
     remaining_seconds--;
+    if (do_print_progress) {
+        do_reprint_bottom_screen = 1;
+        do_reprint_top_screen = 1;
+    }
 }
-
-static void print_test_mode(PrintConsole* console);
 
 int main(int argc, char **argv) {
     // Working variables
@@ -69,41 +72,66 @@ int main(int argc, char **argv) {
         if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
             is_in_setting_submenu = 1;
 
-        // Clear both consoles
-        consoleSelect(&bottom_screen_console);
-        consoleClear();
-        consoleSelect(&top_screen_console);
-        consoleClear();
-
-        // Print info on top screen and clear bottom console if process is not running
-        if (current_status < RUNNING_SCREEN_ON) {
+        if (do_reprint_top_screen) {
             print_top_screen(
                 &top_screen_console,
+                current_status,
                 screen_on_length_minutes,
                 screen_off_length_minutes,
                 repetition_count,
                 backlight_level,
+                do_print_progress,
+                remaining_seconds,
+                remaining_repetitions,
                 screens,
                 mode,
                 CONSOLE_TYPE
             );
+
+            do_reprint_top_screen = 0;
+        }
+        if (do_reprint_bottom_screen) {
+            print_bottom_screen(
+                &bottom_screen_console,
+                current_status,
+                settings_menu_position,
+                submenu_position,
+                do_print_progress,
+                remaining_seconds,
+                remaining_repetitions,
+                number_input_buffer,
+                backlight_level_buffer,
+                CONSOLE_TYPE
+            );
+            do_reprint_bottom_screen = 0;
         }
 
-        // Select bottom console
-        consoleSelect(&bottom_screen_console);
+        // Set reprint of bottom screen if in settings menu or submenu, and A, B, up or down were pressed...
+        if (current_status >= SETTINGS_MENU && current_status <= BACKLIGHT_LEVEL_MENU
+            && keys_down & (KEY_B | KEY_A | KEY_UP | KEY_DOWN))
+            do_reprint_bottom_screen = 1;
+        // ..and additionally if left or right were pressed on a number input
+        if (current_status >= SCREEN_ON_LENGTH_MENU && current_status <= REPETITION_COUNT_MENU
+            && keys_down & (KEY_LEFT | KEY_RIGHT))
+            do_reprint_bottom_screen = 1;
+        // Set reprint of top screen if in settings submenu and A was pressed
+        if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU
+            && keys_down & KEY_A)
+            do_reprint_top_screen = 1;
+
 
         // Handle input and printing in various menus
         switch(current_status) {
             case MAIN_MENU:
-                printf("Press A to begin\n");
-                printf("Press X for settings\n");
-                printf("Press START to power off\n\t(at any time)\n");
                 // Enter settings menu
                 if (keys_down & KEY_X) {
+                    do_reprint_bottom_screen = 1;
                     settings_menu_position = 0;
                     current_status = SETTINGS_MENU;
                 }
                 else if (keys_down & KEY_A) {
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
                     // Start the process
                     init_screen_on_phase(
                         mode,
@@ -117,15 +145,18 @@ int main(int argc, char **argv) {
                     current_status = RUNNING_SCREEN_ON;
                     timerStart(0, ClockDivider_1024, timerFreqToTicks_1024(1), timer_handler);
                 }
-                else if (!(keys_held ^ TEST_MODE_COMBO))
+                else if (!(keys_held ^ TEST_MODE_COMBO)) {
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
                     current_status = TEST_MODE_WARNING;
+                }
                 break;
 
             // ===Setting menus with a list===
             case SETTINGS_MENU:
-                print_settings_menu(&bottom_screen_console, settings_menu_position);
-                if (keys_down & KEY_B)
+                if (keys_down & KEY_B) {
                     current_status = MAIN_MENU;
+                }
                 // Handle entering a settings submenu
                 else if (keys_down & KEY_A) {
                     current_status = get_settings_target(settings_menu_position);
@@ -156,7 +187,6 @@ int main(int argc, char **argv) {
                 break;
 
             case SELECT_SCREENS_MENU:
-                print_screens_menu(&bottom_screen_console, submenu_position);
                 if (keys_down & KEY_A)
                     screens = get_screen_target(submenu_position);
                 else if (keys_down & KEY_UP && submenu_position > 0)
@@ -166,7 +196,6 @@ int main(int argc, char **argv) {
                 break;
 
             case MODE_MENU:
-                print_modes_menu(&bottom_screen_console, submenu_position);
                 if (keys_down & KEY_A)
                     mode = get_mode_target(submenu_position);
                 else if (keys_down & KEY_UP && submenu_position > 0)
@@ -179,7 +208,6 @@ int main(int argc, char **argv) {
             // Number input is printed and handled further down below
             // TODO: handle input of 0 in screen on time or repetition count more gracefully
             case SCREEN_ON_LENGTH_MENU:
-                printf("Screen on length (minutes):\n\n");
                 if (keys_down & KEY_A) {
                     temp = buffer_to_int(number_input_buffer);
                     if (temp > 0)
@@ -188,13 +216,11 @@ int main(int argc, char **argv) {
                 break;
 
             case SCREEN_OFF_LENGTH_MENU:
-                printf("Screen off length (minutes):\n\n");
                 if (keys_down & KEY_A)
                     screen_off_length_minutes = buffer_to_int(number_input_buffer);
                 break;
 
             case REPETITION_COUNT_MENU:
-                printf("Repetition count:\n\n");
                 if (keys_down & KEY_A) {
                     temp = buffer_to_int(number_input_buffer);
                     if (temp > 0)
@@ -204,7 +230,6 @@ int main(int argc, char **argv) {
 
             // ===Backlight level menu===
             case BACKLIGHT_LEVEL_MENU:
-                print_backlight_level_menu(&bottom_screen_console, backlight_level_buffer, CONSOLE_TYPE);
                 if (keys_down & KEY_A) {
                     assert(backlight_level >= 0);
                     assert(backlight_level <= MAX_BACKLIGHT_LEVEL);
@@ -276,34 +301,27 @@ int main(int argc, char **argv) {
                 }
                 break;
             case TEST_MODE_WARNING:
-                consoleSetColor(&bottom_screen_console, CONSOLE_LIGHT_RED);
-                printf("This test mode is not meant\n");
-                printf("as a replacement for the normal\n");
-                printf("deyellowing process\n\n");
-                printf("Avoid rapidly and/or repeatedly\n");
-                printf("turning the screens on and off\n");
-                printf("and leaving them on for long\n");
-                printf("periods of time\n\n");
-                printf("I'm not responsible for damage\n");
-                printf("caused by the misuse of this\n");
-                printf("mode\n\n");
-                consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
-                printf("Press X to continue\n");
-                printf("Press any other button\n\tto go back");
                 if (keys_down & KEY_X) {
                     current_status = TEST_MODE;
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
                     consoleSetColor(&bottom_screen_console, CONSOLE_LIGHT_RED);
                     consoleSetColor(&top_screen_console, CONSOLE_LIGHT_RED);
                     setBackdropBoth(WHITE);
                 }
-                else if (keys_down)
+                else if (keys_down) {
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
                     current_status = MAIN_MENU;
+                }
                 break;
             case TEST_MODE:
                 // Reset colors and backlight and return to main menu
                 if (keys_down & KEY_SELECT) {
                     consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
                     consoleSetColor(&top_screen_console, CONSOLE_WHITE);
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
                     setBackdropBoth(BLACK);
                     systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
                     current_status = MAIN_MENU;
@@ -340,18 +358,10 @@ int main(int argc, char **argv) {
                     else if (keys_down & KEY_B)
                         systemSetBacklightLevel(5);
                 }
-                print_test_mode(&top_screen_console); //FIXME why isn't it printing on the top console???
-                print_test_mode(&bottom_screen_console);
         }
 
-        // Print number input and text at the bottom and handle dpad
-        if (
-            is_in_setting_submenu && // Avoids having the numbers printed in the wrong place for a frame
-            (current_status == SCREEN_ON_LENGTH_MENU ||
-            current_status == SCREEN_OFF_LENGTH_MENU ||
-            current_status == REPETITION_COUNT_MENU)
-        ) {
-            print_number_input(&bottom_screen_console, submenu_position, number_input_buffer);
+        // Handle dpad for number input
+        if (current_status >= SCREEN_ON_LENGTH_MENU && current_status <= REPETITION_COUNT_MENU) {
             if (keys_down & KEY_LEFT && submenu_position > 0)
                 submenu_position--;
             else if (keys_down & KEY_RIGHT && submenu_position < NUMBER_INPUT_LENGTH - 1)
@@ -383,12 +393,6 @@ int main(int argc, char **argv) {
                 screens
             );
 
-            // Clear consoles
-            consoleSelect(&top_screen_console);
-            consoleClear();
-            consoleSelect(&bottom_screen_console);
-            consoleClear();
-
             if (keys_held & KEY_UP)
                 setBackdropBoth(BLUE);
             else if (keys_held & KEY_RIGHT)
@@ -398,16 +402,27 @@ int main(int argc, char **argv) {
             else if (keys_held & KEY_LEFT)
                 setBackdropBoth(BLACK);
             if (keys_held & KEY_X) {
-                print_progress_message(
+                if (!do_print_progress) {
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
+                }
+                do_print_progress = 1;
+                /*print_progress_message(
                     &top_screen_console,
                     &bottom_screen_console,
                     remaining_seconds,
                     remaining_repetitions,
                     current_status == RUNNING_SCREEN_ON
-                );
+                );*/
+            } else {
+                if (do_print_progress) {
+                    do_reprint_bottom_screen = 1;
+                    do_reprint_top_screen = 1;
+                }
+                do_print_progress = 0;
             }
 
-            // Print warning message if in screen off phase and the user has turned the screen on
+            /*// Print warning message if in screen off phase and the user has turned the screen on
             if (
                 current_status == RUNNING_SCREEN_OFF &&
                 keys_held & (KEY_UP | KEY_LEFT| KEY_DOWN | KEY_RIGHT | KEY_X)
@@ -416,23 +431,7 @@ int main(int argc, char **argv) {
                     &top_screen_console,
                     &bottom_screen_console
                 );
-            }
+            }*/
         }
     }
-}
-
-static void print_test_mode(PrintConsole* console) {
-    consoleSelect(console);
-    consoleSetCursor(
-        console,
-        console->consoleWidth / 2 - 2,
-        console->consoleHeight / 2
-    );
-    printf("TEST");
-    consoleAddToCursor(
-        console,
-        -4,
-        1
-    );
-    printf("MODE");
 }
