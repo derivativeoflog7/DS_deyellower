@@ -407,13 +407,6 @@ int main(int argc, char **argv) {
                     do_reprint_top_screen = 1;
                 }
                 do_print_progress = 1;
-                /*print_progress_message(
-                    &top_screen_console,
-                    &bottom_screen_console,
-                    remaining_seconds,
-                    remaining_repetitions,
-                    current_status == RUNNING_SCREEN_ON
-                );*/
             } else {
                 if (do_print_progress) {
                     do_reprint_bottom_screen = 1;
@@ -421,17 +414,6 @@ int main(int argc, char **argv) {
                 }
                 do_print_progress = 0;
             }
-
-            /*// Print warning message if in screen off phase and the user has turned the screen on
-            if (
-                current_status == RUNNING_SCREEN_OFF &&
-                keys_held & (KEY_UP | KEY_LEFT| KEY_DOWN | KEY_RIGHT | KEY_X)
-            ) {
-                print_warning_message(
-                    &top_screen_console,
-                    &bottom_screen_console
-                );
-            }*/
         }
     }
 }
