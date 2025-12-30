@@ -4,7 +4,8 @@ BLOCKSDS	?= /opt/blocksds/core
 
 NAME		:= ds_deyellower
 GAME_TITLE	:= DS_deyellower
-GAME_SUBTITLE	:= derivativeoflog7
+GAME_SUBTITLE	:=
+GAME_AUTHOR	:= by derivativeoflog7
 GAME_ICON     	:= icon.bmp
 
 
