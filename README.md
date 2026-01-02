@@ -26,7 +26,7 @@ Both of these features are experimental, as the effectiveness of the cycling col
 
 # Usage
 For nativating the menus, follow the on-screen instructions.  
-Once the process is started, hold dpad up to temporarly show a blue screen at maximum brightness, right for yellow, down for white, and left for black; hold A to print the remaining time and number of repetitions.  
+Once the process is started, hold dpad up to temporarly show a blue screen at maximum brightness, right for yellow, down for white, and left for black; hold X to print the remaining time and number of repetitions.  
 When the screens or backlight are off, the screens/backlight will temporarly turn back on when a button is being held, but please avoid doing it repeatedly and/or rapidly during the screen off phase as it's probably not the best for the screens and nullifies the whole purpose of letting the screens rest.  
 It is possible to disable the screen off phase by setting it's duration to 0, but **this is not generally recommended especially at higher backlight levels**.
 
@@ -38,7 +38,7 @@ Please take the necessary precautions, or avoid using the mode yourself, if you'
 There's still a lot of unknown things regarding yellow NDS(i) screens, the causes, and the processes to potentially revert it.  
 This program, and any other method of deyellowing screens by leaving them on for a long time, are not guaranteed to work for everyone (or to be completely effective), especially for more serious cases.  
 Leaving the console on for a prolonged period of time, especially at maximum brightness, can and has been known to kill screens, and will potentially reduce the lifespan of them.  
-It is not guaranteed that the screen of phases are enough to prevent damage to the screens, and the ideal durations of them is so far unknown.  
+It is not guaranteed that the screen off phases are enough to prevent damage to the screens, and the ideal durations of them is so far unknown.  
 Leaving the console on and plugged to a charger for a prolonged period of time will also definitely shorten the battery's lifetime and it's capacity to hold a charge.  
 Understand and accepts these risks before trying to deyellow screens, with this application or in general.  
 **I'm not responsible for damaged or broken displays, batteries, or other components caused by leaving this application running for long periods of time.**  
