@@ -294,6 +294,7 @@ int main(int argc, char **argv) {
                     }
                 }
                 break;
+
             case RUNNING_SCREEN_OFF:
                 // Change phase when the time has elapsed, and decrease the number of remaining repetitions
                 if (remaining_seconds <= 0) {
@@ -324,17 +325,20 @@ int main(int argc, char **argv) {
                     current_status = MAIN_MENU;
                 }
                 break;
+
             case TEST_MODE:
                 // Reset colors and backlight and return to main menu
                 if (keys_down & KEY_SELECT) {
+                    setBackdropBoth(BLACK);
+                    consoleSelect(&bottom_screen_console);
+                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
+                    consoleSelect(&top_screen_console);
+                    consoleSetColor(&top_screen_console, CONSOLE_WHITE);
+                    //FIXME? if consoles are not selected, colors aren't applied properly
                     do_reprint_bottom_screen = 1;
                     do_reprint_top_screen = 1;
-                    setBackdropBoth(BLACK);
                     systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
                     current_status = MAIN_MENU;
-                    consoleSetColor(&bottom_screen_console, CONSOLE_WHITE);
-                    consoleSetColor(&top_screen_console, CONSOLE_WHITE);
-                    // FIXME: the above doesn't work, menu.c has a workaround
                 }
                 else if (keys_held & KEY_Y) {
                     if (keys_down & KEY_UP)

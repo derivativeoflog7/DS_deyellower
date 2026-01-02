@@ -53,7 +53,64 @@ void print_backlight_level (
         printf("(max)");
 }
 
+static void print_top_screen_settings_status(
+    PrintConsole *top_screen_console,
+    ConsoleType console_type,
+    Screens screens,
+    Mode mode,
+    int screen_on_length,
+    int screen_off_length,
+    int repetition_count,
+    int backlight_level
+) {
+    printf("DS_deyellower v%s\n", VERSION);
+    printf("by derivativeoflog7\n");
+    printf("\n");
+    printf("Detected console type:\n");
+    if (console_type == DSI)
+        printf("DSi\n");
+    else if (console_type == DS_WITH_BACKLIGHT_CONTROL)
+        printf("DS (Lite) with backlight control"); // No newline as it fits a whole row
+    else
+        printf("DS without backlight control\n");
+    printf("\nCurrent settings: \n");
+    printf("Top screen: %s\n", screens == BOTTOM ? "NO" : "YES");
+    printf("Bottom screen: %s\n", screens == TOP ? "NO" : "YES");
+    printf("Screen on length: %umin\n", screen_on_length);
+    printf("Screen off length: %umin\n", screen_off_length);
+    printf("Repetition count: %u\n", repetition_count);
+    printf("Mode: %s\n", mode == WHITE_SCREEN ? "white screen" : "cycling colors");
+    printf("Backlight level: ");
+    print_backlight_level(backlight_level, console_type);
+    printf("\n");
+}
+
+static void print_main_menu() {
+    printf("Press A to begin\n");
+    printf("Press X for settings\n");
+    printf("Press START to power off\n\t(at any time)\n");
+}
+
+static void print_test_mode_warning(PrintConsole* bottom_screen_console) {
+    consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_RED);
+    printf("This test mode is not meant\n");
+    printf("as a replacement for the normal\n");
+    printf("deyellowing process\n\n");
+    printf("Avoid rapidly and/or repeatedly\n");
+    printf("turning the screens on and off\n");
+    printf("and leaving them on for long\n");
+    printf("periods of time\n\n");
+    printf("I'm not responsible for damage\n");
+    printf("caused by the misuse of this\n");
+    printf("mode\n\n");
+    consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
+    printf("Press X to continue\n");
+    printf("Press any other button\n\tto go back\n\n");
+    printf("Press SELECT to quit test mode");
+}
+
 static void print_test_mode(PrintConsole* console) {
+    consoleSetColor(console, CONSOLE_LIGHT_RED);
     consoleSetCursor(
         console,
         console->consoleWidth / 2 - 2,
@@ -215,36 +272,18 @@ void print_top_screen (
     consoleClear();
     // Print info on top screen if process is not running
     if (current_status < RUNNING_SCREEN_ON) {
-        consoleSetColor(top_screen_console, CONSOLE_WHITE);
-        /*
-         * FIXME:
-         * I can't understand why, but setting the console color in main.c
-         * under case TEST_MODE fails to reset the color to white when
-         * exiting from test mode, so it's also done here
-         */
-        printf("DS_deyellower v%s\n", VERSION);
-        printf("by derivativeoflog7\n");
-        printf("\n");
-        printf("Detected console type:\n");
-        if (console_type == DSI)
-            printf("DSi\n");
-        else if (console_type == DS_WITH_BACKLIGHT_CONTROL)
-            printf("DS (Lite) with backlight control"); // No newline as it fits a whole row
-        else
-            printf("DS without backlight control\n");
-        printf("\nCurrent settings: \n");
-        printf("Top screen: %s\n", screens == BOTTOM ? "NO" : "YES");
-        printf("Bottom screen: %s\n", screens == TOP ? "NO" : "YES");
-        printf("Screen on length: %umin\n", screen_on_length);
-        printf("Screen off length: %umin\n", screen_off_length);
-        printf("Repetition count: %u\n", repetition_count);
-        printf("Mode: %s\n", mode == WHITE_SCREEN ? "white screen" : "cycling colors");
-        printf("Backlight level: ");
-        print_backlight_level(backlight_level, console_type);
-        printf("\n");
+        print_top_screen_settings_status(
+            top_screen_console,
+            console_type,
+            screens,
+            mode,
+            screen_on_length,
+            screen_off_length,
+            repetition_count,
+            backlight_level
+        );
     }
     else if (current_status == TEST_MODE) {
-        consoleSetColor(top_screen_console, CONSOLE_LIGHT_RED);
         print_test_mode(top_screen_console);
     }
     else if ((current_status == RUNNING_SCREEN_ON || current_status == RUNNING_SCREEN_OFF) && do_print_progress) {
@@ -274,9 +313,7 @@ void print_bottom_screen(
     consoleClear();
     switch (current_status) {
         case MAIN_MENU:
-            printf("Press A to begin\n");
-            printf("Press X for settings\n");
-            printf("Press START to power off\n\t(at any time)\n");
+            print_main_menu();
             break;
         case SETTINGS_MENU:
             print_settings_menu(bottom_screen_console, settings_menu_position);
@@ -314,24 +351,9 @@ void print_bottom_screen(
             }
             break;
         case TEST_MODE_WARNING:
-            consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_RED);
-            printf("This test mode is not meant\n");
-            printf("as a replacement for the normal\n");
-            printf("deyellowing process\n\n");
-            printf("Avoid rapidly and/or repeatedly\n");
-            printf("turning the screens on and off\n");
-            printf("and leaving them on for long\n");
-            printf("periods of time\n\n");
-            printf("I'm not responsible for damage\n");
-            printf("caused by the misuse of this\n");
-            printf("mode\n\n");
-            consoleSetColor(bottom_screen_console, CONSOLE_WHITE);
-            printf("Press X to continue\n");
-            printf("Press any other button\n\tto go back\n\n");
-            printf("Press SELECT to quit test mode");
+            print_test_mode_warning(bottom_screen_console);
             break;
         case TEST_MODE:
-            consoleSetColor(bottom_screen_console, CONSOLE_LIGHT_RED);
             print_test_mode(bottom_screen_console);
             break;
     }
