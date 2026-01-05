@@ -338,6 +338,7 @@ int main(int argc, char **argv) {
                     do_reprint_bottom_screen = 1;
                     do_reprint_top_screen = 1;
                     systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
+                    powerOn(POWER_LCD);
                     current_status = MAIN_MENU;
                 }
                 else if (keys_held & KEY_Y) {

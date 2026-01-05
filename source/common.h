@@ -1,7 +1,7 @@
 #ifndef DS_DEYELLOWER_COMMON_H
 #define DS_DEYELLOWER_COMMON_H
 
-#define VERSION "2.2"
+#define VERSION "2.2.1"
 
 typedef enum {
     MAIN_MENU,
