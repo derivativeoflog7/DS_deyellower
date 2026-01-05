@@ -22,13 +22,12 @@ int main(int argc, char **argv) {
     // Working variables
     CyclingPhase current_cycling_phase = BLACK_TO_BLUE;
     Status current_status = MAIN_MENU;
-    u16 backdrop_color, keys_held, keys_down;
-    int submenu_position = 0, settings_menu_position = 0, is_in_setting_submenu;
+    u16 backdrop_color;
+    int submenu_position = 0, settings_menu_position = 0;
     int number_input_buffer[NUMBER_INPUT_LENGTH];
     int remaining_repetitions = 0; // init to avoid the compiler complaining about it
     int backlight_level_buffer = 0; // same as above
     int current_backlight_top, current_backlight_bottom, last_backlight_top, last_backlight_bottom;
-    int conv_result;
 
     // Constants
     const ConsoleType CONSOLE_TYPE = detect_console_type();
@@ -63,13 +62,13 @@ int main(int argc, char **argv) {
     while (1) {
         swiWaitForVBlank();
         scanKeys();
-        keys_down = keysDown();
-        keys_held = keysHeld();
+        int keys_down = keysDown();
+        int keys_held = keysHeld();
 
         if (keys_down & KEY_START)
             systemShutDown();
 
-        is_in_setting_submenu = 0;
+        int is_in_setting_submenu = 0;
         if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU)
             is_in_setting_submenu = 1;
 
@@ -216,7 +215,7 @@ int main(int argc, char **argv) {
             // TODO: handle input of 0 in screen on time or repetition count more gracefully
             case SCREEN_ON_LENGTH_MENU:
                 if (keys_down & KEY_A) {
-                    conv_result = buffer_to_int(number_input_buffer);
+                    int conv_result = buffer_to_int(number_input_buffer);
                     if (conv_result > 0)
                         screen_on_length_minutes = conv_result;
                 }
@@ -229,7 +228,7 @@ int main(int argc, char **argv) {
 
             case REPETITION_COUNT_MENU:
                 if (keys_down & KEY_A) {
-                    conv_result = buffer_to_int(number_input_buffer);
+                    int conv_result = buffer_to_int(number_input_buffer);
                     if (conv_result > 0)
                         repetition_count = conv_result;
                 }
