@@ -1,20 +1,19 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <nds.h>
 #include "common.h"
 #include "menu.h"
 #include "process.h"
 
-#define DEBUG_BUFFER_SIZE 50
-
 int remaining_seconds;
-int do_reprint_top_screen = 1, do_reprint_bottom_screen = 1, do_print_progress = 0;
+bool do_reprint_top_screen = true, do_reprint_bottom_screen = true, do_print_progress = false;
 
 void timer_handler() {
     remaining_seconds--;
     // Reprint if X is being held when a second elapses (also handles changing phases)
     if (do_print_progress) {
-        do_reprint_bottom_screen = 1;
-        do_reprint_top_screen = 1;
+        do_reprint_bottom_screen = true;
+        do_reprint_top_screen = true;
     }
 }
 
@@ -89,7 +88,7 @@ int main(int argc, char **argv) {
                 CONSOLE_TYPE
             );
 
-            do_reprint_top_screen = 0;
+            do_reprint_top_screen = false;
         }
         if (do_reprint_bottom_screen) {
             print_bottom_screen(
@@ -104,21 +103,21 @@ int main(int argc, char **argv) {
                 backlight_level_buffer,
                 CONSOLE_TYPE
             );
-            do_reprint_bottom_screen = 0;
+            do_reprint_bottom_screen = false;
         }
 
         // Set reprint of bottom screen if in settings menu or submenu, and A, B, up or down were pressed...
         if (current_status >= SETTINGS_MENU && current_status <= BACKLIGHT_LEVEL_MENU
             && keys_down & (KEY_B | KEY_A | KEY_UP | KEY_DOWN))
-            do_reprint_bottom_screen = 1;
+            do_reprint_bottom_screen = true;
         // ...and additionally if left or right were pressed on a number input
         if (current_status >= SCREEN_ON_LENGTH_MENU && current_status <= REPETITION_COUNT_MENU
             && keys_down & (KEY_LEFT | KEY_RIGHT))
-            do_reprint_bottom_screen = 1;
+            do_reprint_bottom_screen = true;
         // Set reprint of top screen if in settings submenu and A was pressed
         if (current_status >= SELECT_SCREENS_MENU && current_status <= BACKLIGHT_LEVEL_MENU
             && keys_down & KEY_A)
-            do_reprint_top_screen = 1;
+            do_reprint_top_screen = true;
 
 
         // Handle input and printing in various menus
@@ -131,13 +130,13 @@ int main(int argc, char **argv) {
 
                 // Enter settings menu
                 if (keys_down & KEY_X) {
-                    do_reprint_bottom_screen = 1;
+                    do_reprint_bottom_screen = true;
                     settings_menu_position = 0;
                     current_status = SETTINGS_MENU;
                 }
                 else if (keys_down & KEY_A) {
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                     // Start the process
                     init_screen_on_phase(
                         mode,
@@ -152,8 +151,8 @@ int main(int argc, char **argv) {
                     timerStart(0, ClockDivider_1024, timerFreqToTicks_1024(1), timer_handler);
                 }
                 else if (!(keys_held ^ TEST_MODE_COMBO)) {
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                     current_status = TEST_MODE_WARNING;
                 }
                 break;
@@ -314,13 +313,13 @@ int main(int argc, char **argv) {
                 if (keys_down & KEY_X) {
                     current_status = TEST_MODE;
                     // Console color is changed by print_top_screen/print_bottom_screen
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                     setBackdropBoth(WHITE);
                 }
                 else if (keys_down) {
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                     current_status = MAIN_MENU;
                 }
                 break;
@@ -334,8 +333,8 @@ int main(int argc, char **argv) {
                     consoleSelect(&top_screen_console);
                     consoleSetColor(&top_screen_console, CONSOLE_WHITE);
                     //FIXME? if consoles are not selected, colors aren't applied properly
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                     systemSetBacklightLevel(MAX_BACKLIGHT_LEVEL);
                     powerOn(POWER_LCD);
                     current_status = MAIN_MENU;
@@ -418,16 +417,16 @@ int main(int argc, char **argv) {
             // Reprint if X was released or just pressed
             if (keys_held & KEY_X) {
                 if (!do_print_progress) {
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                 }
-                do_print_progress = 1;
+                do_print_progress = true;
             } else {
                 if (do_print_progress) {
-                    do_reprint_bottom_screen = 1;
-                    do_reprint_top_screen = 1;
+                    do_reprint_bottom_screen = true;
+                    do_reprint_top_screen = true;
                 }
-                do_print_progress = 0;
+                do_print_progress = false;
             }
         }
     }
