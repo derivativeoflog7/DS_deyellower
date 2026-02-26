@@ -1,4 +1,4 @@
-# DS_deyellower
+# DS deyellower
 Blast your Nintendo ~3~DS(i) screens with white for hours and pray that you don't destroy it.  
 Inspired by (and above line stolen from) [3Deyellower](https://github.com/ManiacOfGitHub/3Deyellower)
 
